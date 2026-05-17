@@ -1,0 +1,1875 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DISPATCH · Yoel Andreas Manoppo</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,500;12..96,600;12..96,700&display=swap" rel="stylesheet">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<style>
+  :root {
+    --ink:        #0E0D0B;
+    --ink2:       #14120F;
+    --inkdeep:    #070605;
+    --paper:      #EDE7DA;
+    --parchment:  #D8CFBC;
+    --graphite:   #1B1916;
+    --slab:       #252220;
+    --vermillion: #E2401C;
+    --vermillion-soft: rgba(226, 64, 28, .14);
+    --jade:       #3AAE7A;
+    --jade-soft:  rgba(58, 174, 122, .14);
+    --sand:       #C4B7A1;
+    --dust:       #7B7466;
+    --rule:       rgba(237, 231, 218, 0.12);
+    --rule-bold:  rgba(237, 231, 218, 0.22);
+    --r-sm: 10px;
+    --r-md: 16px;
+    --r-lg: 22px;
+    --r-xl: 28px;
+  }
+
+  * { font-family: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif; }
+  html, body { background: var(--ink); color: var(--paper); -webkit-font-smoothing: antialiased; }
+
+  /* ============ ATMOSPHERE ============ */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 18% 15%, rgba(226,64,28,.10), transparent 60%),
+      radial-gradient(ellipse 50% 40% at 85% 85%, rgba(58,174,122,.07), transparent 60%),
+      radial-gradient(ellipse 80% 60% at 50% 50%, rgba(196,183,161,.04), transparent 70%);
+  }
+  .grain::before {
+    content: '';
+    position: fixed; inset: 0; pointer-events: none; z-index: 60;
+    opacity: .055; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence baseFrequency='.9' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    background-size: 280px 280px;
+  }
+  .vignette::after {
+    content: '';
+    position: fixed; inset: 0; pointer-events: none; z-index: 55;
+    background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,.45) 100%);
+  }
+
+  /* ============ TYPOGRAPHY ============ */
+  .kicker {
+    font-weight: 500; font-size: 11px;
+    letter-spacing: .22em; text-transform: uppercase;
+    color: var(--sand);
+  }
+  .display {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-weight: 400; line-height: .94;
+    letter-spacing: -.025em;
+    font-feature-settings: 'liga' 1;
+  }
+  .display .it { font-style: italic; color: var(--vermillion); }
+  .reading {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: 18px; line-height: 1.55;
+    color: var(--parchment);
+  }
+  .num {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-feature-settings: 'tnum' 1, 'lnum' 1;
+    font-style: italic;
+  }
+  .label {
+    font-weight: 500; font-size: 10.5px; letter-spacing: .26em;
+    text-transform: uppercase; color: var(--dust);
+  }
+  .smallcaps {
+    font-weight: 500; font-size: 10.5px; letter-spacing: .3em;
+    text-transform: uppercase;
+  }
+
+  /* ============ MOTION ============ */
+  .reveal-word { display: inline-block; opacity: 0; transform: translateY(28px);
+                 animation: revealUp 1.05s cubic-bezier(.16,.84,.3,1) forwards; }
+  @keyframes revealUp { to { opacity: 1; transform: translateY(0); } }
+  .fade-in { opacity: 0; animation: fadeIn .9s ease forwards; }
+  @keyframes fadeIn { to { opacity: 1; } }
+  .slide-in { opacity: 0; transform: translateX(-8px);
+              animation: slideIn .35s cubic-bezier(.2,.7,.3,1) forwards; }
+  @keyframes slideIn { to { opacity: 1; transform: translateX(0); } }
+  .pop { transform: scale(.97); opacity: 0;
+         animation: pop .6s cubic-bezier(.18,.89,.32,1.18) forwards; }
+  @keyframes pop { to { transform: scale(1); opacity: 1; } }
+
+  /* ============ NAV TABS ============ */
+  .nav-shell {
+    position: sticky; top: 16px; z-index: 50;
+    margin: 0 auto; max-width: max-content;
+    background: rgba(11, 10, 8, .85); backdrop-filter: blur(20px);
+    border: 1px solid var(--rule-bold);
+    border-radius: 999px; padding: 6px;
+    display: flex; gap: 4px;
+    box-shadow: 0 18px 40px -16px rgba(0,0,0,.6);
+  }
+
+  /* ============ FLOATING NOW-PLAYING DOCK (CD-style) ============ */
+  .now-dock {
+    position: fixed;
+    right: 24px; bottom: 24px;
+    z-index: 100;
+    width: 340px;
+    background: linear-gradient(160deg,
+      rgba(20,18,15,.94) 0%,
+      rgba(37,34,32,.94) 100%);
+    backdrop-filter: blur(28px);
+    border: 1px solid var(--rule-bold);
+    border-radius: 24px;
+    padding: 20px;
+    box-shadow:
+      0 30px 60px -20px rgba(0,0,0,.7),
+      0 0 0 1px rgba(226,64,28,.08),
+      inset 0 1px 0 rgba(255,255,255,.04);
+    overflow: hidden;
+    transition: transform .35s cubic-bezier(.2,.8,.2,1), opacity .3s;
+    animation: dockSlideIn .6s cubic-bezier(.2,.8,.2,1) forwards;
+    transform-origin: bottom right;
+  }
+  .now-dock.collapsed {
+    width: 64px; height: 64px; padding: 0;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; border-radius: 50%;
+  }
+  .now-dock.collapsed .dock-body,
+  .now-dock.collapsed .dock-foot { display: none; }
+  .now-dock.is-idle { opacity: .85; }
+
+  @keyframes dockSlideIn {
+    from { transform: translateY(20px) scale(.95); opacity: 0; }
+    to   { transform: translateY(0)    scale(1);   opacity: 1; }
+  }
+
+  /* sweep highlight */
+  .now-dock::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(circle at 30% 0%, rgba(226,64,28,.12), transparent 60%);
+    pointer-events: none;
+  }
+  .now-dock.is-idle::before { opacity: 0; }
+
+  /* ----- HEADER ----- */
+  .dock-head {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 16px;
+  }
+  .dock-head .dot-wrap {
+    position: relative; width: 12px; height: 12px;
+  }
+  .dock-head .dot-core {
+    width: 100%; height: 100%; border-radius: 50%;
+    background: var(--vermillion);
+    box-shadow: 0 0 12px var(--vermillion);
+  }
+  .dock-head .dot-ring {
+    position: absolute; inset: 0; border-radius: 50%;
+    border: 1.5px solid var(--vermillion);
+    animation: ringPulse 1.6s ease-out infinite;
+  }
+  @keyframes ringPulse {
+    0%   { transform: scale(1);   opacity: 1; }
+    100% { transform: scale(2.6); opacity: 0; }
+  }
+  .now-dock.is-idle .dot-core { background: var(--dust); box-shadow: none; }
+  .now-dock.is-idle .dot-ring { display: none; }
+
+  .dock-head .h-label {
+    font-weight: 500; font-size: 10px; letter-spacing: .28em;
+    text-transform: uppercase; color: var(--vermillion);
+  }
+  .now-dock.is-idle .dock-head .h-label { color: var(--dust); }
+  .dock-head .collapse-btn {
+    margin-left: auto; cursor: pointer;
+    color: var(--dust); font-family: 'Instrument Serif', serif;
+    font-size: 22px; line-height: 1;
+    transition: color .2s;
+    background: none; border: 0; padding: 0;
+  }
+  .dock-head .collapse-btn:hover { color: var(--paper); }
+
+  /* ----- CIRCULAR PROGRESS (CD ring) ----- */
+  .cd-ring {
+    width: 110px; height: 110px;
+    position: relative;
+    margin: 0 auto 14px;
+  }
+  .cd-ring svg {
+    width: 100%; height: 100%;
+    transform: rotate(-90deg);
+  }
+  .cd-ring .track {
+    fill: none;
+    stroke: rgba(237,231,218,.07);
+    stroke-width: 6;
+  }
+  .cd-ring .fill {
+    fill: none;
+    stroke: url(#cdGradient);
+    stroke-width: 6;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1.6s cubic-bezier(.16,.84,.3,1);
+    filter: drop-shadow(0 0 6px rgba(226,64,28,.55));
+  }
+  /* outer spinning ring — gives a downloading vibe */
+  .cd-ring .spinner {
+    position: absolute; inset: -8px;
+    border: 1.5px dashed rgba(226,64,28,.32);
+    border-radius: 50%;
+    animation: cdSpin 24s linear infinite;
+    pointer-events: none;
+  }
+  .now-dock.is-idle .spinner { animation-duration: 0s; opacity: .12; }
+  @keyframes cdSpin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+
+  /* orbit dots — mengelilingi cincin */
+  .cd-ring .orbit {
+    position: absolute; inset: -3px;
+    pointer-events: none;
+    animation: orbitRotate 6s linear infinite;
+  }
+  .cd-ring .orbit .o-dot {
+    position: absolute;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--vermillion);
+    box-shadow: 0 0 10px var(--vermillion),
+                0 0 20px rgba(226,64,28,.4);
+  }
+  /* 3 dots at 0°, 120°, 240° around ring */
+  .cd-ring .orbit .o-dot:nth-child(1) { top: -4px; left: 50%; transform: translateX(-50%); }
+  .cd-ring .orbit .o-dot:nth-child(2) {
+    bottom: 14%; right: 4%; opacity: .55;
+    width: 6px; height: 6px;
+  }
+  .cd-ring .orbit .o-dot:nth-child(3) {
+    bottom: 14%; left: 4%; opacity: .25;
+    width: 5px; height: 5px;
+  }
+  @keyframes orbitRotate {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+  .now-dock.is-idle .orbit { animation: none; opacity: .12; }
+
+  .cd-ring .center {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+  }
+  .cd-ring .center .num-big {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 44px;
+    color: var(--paper);
+    line-height: 1;
+    font-feature-settings: 'tnum' 1, 'lnum' 1;
+  }
+  .cd-ring .center .num-sub {
+    font-weight: 500; font-size: 9px; letter-spacing: .26em;
+    color: var(--dust); text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  /* ----- COMPANY / POSITION ----- */
+  .dock-meta-row {
+    display: flex; gap: 10px; align-items: baseline;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+    max-width: 100%;
+    overflow: hidden;
+  }
+  .dock-meta-row .pl-name {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic; font-size: 17px;
+    color: var(--vermillion);
+    white-space: nowrap;
+  }
+  .dock-meta-row .pl-batch {
+    font-weight: 500; font-size: 10px; letter-spacing: .22em;
+    color: var(--sand); text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .dock-company {
+    font-family: 'Instrument Serif', serif;
+    font-size: 18px; line-height: 1.25; color: var(--paper);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    word-break: break-word;
+    max-width: 100%;
+  }
+  .dock-position {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic; font-size: 13px; color: var(--sand);
+    margin-top: 3px;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    max-width: 100%;
+  }
+  .typewriter-cursor::after {
+    content: '▍';
+    color: var(--vermillion);
+    margin-left: 3px;
+    animation: blink 1s steps(2) infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* ----- FOOTER ----- */
+  .dock-foot {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--rule);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .dock-foot .stat {
+    text-align: center;
+  }
+  .dock-foot .stat .v {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 22px;
+    color: var(--paper);
+  }
+  .dock-foot .stat .k {
+    font-weight: 500; font-size: 9px; letter-spacing: .26em;
+    color: var(--dust); text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  @media (max-width: 640px) {
+    .now-dock {
+      right: 12px; bottom: 12px;
+      width: calc(100vw - 24px);
+      max-width: 340px;
+    }
+  }
+  .nav-pill {
+    padding: 10px 22px; border-radius: 999px;
+    font-weight: 500; font-size: 13px; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--dust);
+    transition: all .25s ease; cursor: pointer;
+    white-space: nowrap;
+  }
+  .nav-pill:hover { color: var(--paper); }
+  .nav-pill.active {
+    background: var(--paper); color: var(--ink);
+    box-shadow: 0 2px 12px rgba(237, 231, 218, .15);
+  }
+  .nav-pill .badge {
+    margin-left: 8px;
+    font-family: 'Instrument Serif', serif;
+    font-style: italic; font-size: 15px;
+    color: var(--vermillion);
+  }
+  .nav-pill.active .badge { color: var(--vermillion); }
+
+  /* ============ PORTRAIT (softer, integrated) ============ */
+  .portrait-frame {
+    position: relative; overflow: hidden;
+    border-radius: var(--r-xl);
+    box-shadow:
+      0 30px 80px -20px rgba(0,0,0,.6),
+      inset 0 0 0 1px var(--rule-bold);
+  }
+  .portrait-frame img {
+    width: 100%; height: 100%; object-fit: cover;
+    filter: sepia(.35) contrast(1.08) brightness(.92) saturate(.85);
+    transition: filter 1.2s ease, transform 8s ease;
+  }
+  .portrait-frame:hover img { filter: none; transform: scale(1.03); }
+  .portrait-frame::after {
+    content: ''; position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse at 30% 30%, transparent 40%, rgba(14,13,11,.5) 100%),
+      linear-gradient(180deg, transparent 55%, rgba(14,13,11,.7) 100%);
+    pointer-events: none;
+  }
+  .portrait-tag {
+    position: absolute; bottom: 18px; left: 18px; z-index: 2;
+    padding: 7px 14px; background: rgba(14,13,11,.85); backdrop-filter: blur(10px);
+    border: 1px solid var(--vermillion);
+    border-radius: 999px;
+    font-weight: 500; font-size: 10px; letter-spacing: .26em;
+    color: var(--vermillion); text-transform: uppercase;
+  }
+
+  /* ============ CARDS (rounded everywhere) ============ */
+  .surface {
+    background: var(--graphite);
+    border: 1px solid var(--rule);
+    border-radius: var(--r-lg);
+    transition: border-color .3s, transform .35s;
+  }
+  .surface:hover { border-color: var(--rule-bold); }
+  .surface-elev {
+    background: linear-gradient(180deg, var(--graphite) 0%, var(--slab) 100%);
+    border: 1px solid var(--rule-bold);
+    border-radius: var(--r-xl);
+    box-shadow: 0 30px 60px -30px rgba(0,0,0,.5);
+  }
+
+  .stat-card {
+    background: linear-gradient(180deg, var(--graphite) 0%, var(--ink2) 100%);
+    border: 1px solid var(--rule);
+    border-radius: var(--r-lg);
+    padding: 28px 26px;
+    transition: border-color .3s, transform .35s;
+  }
+  .stat-card:hover { border-color: var(--rule-bold); transform: translateY(-2px); }
+
+  /* ============ GAUGES (rounded bars, softer) ============ */
+  .gauge {
+    background: var(--graphite); border: 1px solid var(--rule);
+    border-radius: var(--r-lg);
+    padding: 24px; position: relative;
+    transition: border-color .3s, transform .35s;
+    overflow: hidden;
+  }
+  .gauge:hover { border-color: var(--rule-bold); transform: translateY(-3px); }
+  .gauge::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(circle at 80% 0%, rgba(226,64,28,.06), transparent 60%);
+    pointer-events: none;
+  }
+  .gauge .bar-track {
+    position: relative; width: 16px; height: 180px;
+    background: var(--inkdeep); border: 1px solid var(--rule);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .gauge .bar-fill {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(180deg, var(--vermillion), #b8331a);
+    border-radius: 999px;
+    transition: height 1.4s cubic-bezier(.16,.84,.3,1);
+  }
+  .gauge .bar-fill.is-done {
+    background: linear-gradient(180deg, var(--jade), #2a8e60);
+  }
+  .pulse-dot {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--vermillion);
+    box-shadow: 0 0 0 0 rgba(226,64,28,.7);
+    animation: pulse 1.6s infinite;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(226,64,28,.6); }
+    70% { box-shadow: 0 0 0 12px rgba(226,64,28,0); }
+    100% { box-shadow: 0 0 0 0 rgba(226,64,28,0); }
+  }
+  .dot-done   { background: var(--jade); box-shadow: none; animation: none; }
+  .dot-idle   { background: var(--dust); box-shadow: none; animation: none; }
+
+  .finis-stamp {
+    position: absolute; top: 18px; right: 16px;
+    transform: rotate(8deg);
+    border: 1.5px solid var(--jade);
+    color: var(--jade);
+    padding: 5px 14px;
+    font-weight: 600;
+    font-size: 11px; letter-spacing: .38em;
+    background: var(--jade-soft);
+    border-radius: 999px;
+    text-transform: uppercase;
+  }
+
+  /* ============ LEDGER ============ */
+  .ledger { display: flex; flex-direction: column; gap: 6px; }
+  .ledger details {
+    border: 1px solid var(--rule);
+    border-radius: var(--r-md);
+    background: var(--graphite);
+    transition: all .25s ease;
+  }
+  .ledger details:hover {
+    border-color: var(--rule-bold);
+    background: var(--slab);
+    transform: translateX(2px);
+  }
+  .ledger details[open] {
+    background: var(--ink2);
+    border-color: var(--vermillion);
+    box-shadow: inset 3px 0 0 var(--vermillion);
+  }
+  .ledger summary {
+    display: grid; grid-template-columns: 100px 80px 110px 1fr auto auto auto;
+    gap: 18px; align-items: center;
+    padding: 18px 22px; cursor: pointer;
+    border-radius: var(--r-md);
+  }
+  .ledger .big-idx {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: 38px; line-height: 1; color: var(--paper);
+    font-style: italic;
+  }
+  .ledger details[open] .big-idx { color: var(--vermillion); }
+  .ledger summary::-webkit-details-marker { display: none; }
+
+  .platform-tag {
+    font-weight: 500;
+    font-size: 10px; letter-spacing: .28em;
+    padding: 6px 12px; border: 1px solid currentColor; text-transform: uppercase;
+    text-align: center;
+    border-radius: 999px;
+  }
+  .tag-glints    { color: #a5c46e; background: rgba(165,196,110,.05); }
+  .tag-jobstreet { color: #8a98d8; background: rgba(138,152,216,.05); }
+  .tag-linkedin  { color: #9ab1c6; background: rgba(154,177,198,.05); }
+  .tag-indeed    { color: #d4a665; background: rgba(212,166,101,.05); }
+
+  .row-position {
+    font-family: 'Instrument Serif', Georgia, serif;
+    color: var(--dust); font-size: 15px; font-style: italic;
+  }
+  .row-salary {
+    font-family: 'Instrument Serif', Georgia, serif;
+    color: var(--jade); font-size: 16px;
+  }
+  .row-time {
+    font-family: 'Instrument Serif', Georgia, serif;
+    color: var(--dust); font-size: 17px; font-style: italic;
+  }
+
+  .ai-body {
+    padding: 12px 28px 32px 142px;
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: 18px; line-height: 1.7;
+    color: var(--parchment);
+    max-width: 880px;
+    position: relative;
+  }
+  .ai-body p { margin: .65em 0; }
+  .ai-body strong {
+    color: var(--vermillion);
+    font-weight: 500;
+    font-style: normal;
+    background: var(--vermillion-soft);
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+  .ai-body em { color: var(--sand); }
+  .ai-body ul { list-style: none; padding-left: 0; margin: .8em 0; }
+  .ai-body li {
+    padding-left: 1.8em; position: relative;
+    margin: .35em 0;
+  }
+  .ai-body li::before {
+    content: '✦';
+    position: absolute; left: .2em; top: .25em;
+    color: var(--vermillion);
+    font-size: 14px;
+  }
+  .ai-body h2, .ai-body h3, .ai-body h4 {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 26px; font-weight: 400;
+    color: var(--paper);
+    margin: 1.6em 0 .5em;
+    letter-spacing: -.01em;
+    position: relative;
+    padding-left: 16px;
+  }
+  .ai-body h2::before, .ai-body h3::before, .ai-body h4::before {
+    content: '';
+    position: absolute;
+    left: 0; top: .35em; bottom: .35em;
+    width: 3px;
+    background: linear-gradient(180deg, var(--vermillion), transparent);
+    border-radius: 999px;
+  }
+  /* Markdown headings styled as section eyebrows when bold-only paragraphs */
+  .ai-body p strong:only-child {
+    display: inline-block;
+    font-family: 'Bricolage Grotesque', sans-serif;
+    background: none; padding: 0;
+    color: var(--sand);
+    font-weight: 500; font-size: 11.5px;
+    letter-spacing: .28em; text-transform: uppercase;
+    margin-top: 1em;
+  }
+  .ai-body blockquote {
+    border-left: 3px solid var(--vermillion);
+    background: var(--vermillion-soft);
+    border-radius: 0 var(--r-sm) var(--r-sm) 0;
+    padding: 8px 16px;
+    margin: .8em 0;
+    color: var(--paper); font-style: italic;
+  }
+  .ai-body hr {
+    border: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--rule-bold), transparent);
+    margin: 1.8em 0;
+  }
+  .ai-body code {
+    background: var(--graphite);
+    padding: 2px 8px; border-radius: 4px;
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: 14px; color: var(--vermillion);
+  }
+  .essay > p:first-of-type::first-letter,
+  .essay div > p:first-of-type::first-letter {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: 5.8em; line-height: .82; float: left;
+    padding: .03em .14em 0 0;
+    color: var(--vermillion);
+    text-shadow: 0 2px 10px rgba(226,64,28,.25);
+  }
+  /* decorative section ornament between summary blocks */
+  .ai-body h2 + p::before {
+    display: none;
+  }
+
+  /* ============ HEATMAP ============ */
+  .heatmap {
+    display: grid;
+    grid-template-columns: 56px repeat(24, minmax(20px, 1fr));
+    gap: 3px;
+  }
+  .heat-cell {
+    aspect-ratio: 1; border-radius: 4px;
+    background: rgba(237, 231, 218, .04);
+    position: relative;
+    cursor: pointer;
+    transition: transform .2s, box-shadow .2s;
+  }
+  .heat-cell:hover {
+    transform: scale(1.4);
+    box-shadow: 0 4px 12px rgba(0,0,0,.6);
+    z-index: 5;
+  }
+  .heat-cell.has-data { background: var(--vermillion); }
+  .heat-row-label {
+    font-weight: 500; font-size: 10px; letter-spacing: .15em;
+    text-transform: uppercase; color: var(--dust);
+    display: flex; align-items: center;
+    padding-right: 8px; justify-content: flex-end;
+  }
+  .heat-col-label {
+    font-family: 'Instrument Serif', serif; font-size: 11px; color: var(--dust);
+    text-align: center;
+  }
+  .heat-tip {
+    position: absolute; bottom: calc(100% + 6px); left: 50%;
+    transform: translateX(-50%);
+    background: var(--inkdeep); color: var(--paper);
+    padding: 6px 10px; border-radius: 6px;
+    font-size: 11px; white-space: nowrap;
+    opacity: 0; pointer-events: none; transition: opacity .2s;
+    border: 1px solid var(--rule-bold);
+  }
+  .heat-cell:hover .heat-tip { opacity: 1; }
+
+  /* ============ DATE PICKER ============ */
+  .date-grid {
+    display: flex; flex-wrap: wrap; gap: 6px;
+  }
+  .date-pill {
+    padding: 12px 16px;
+    background: var(--graphite); border: 1px solid var(--rule);
+    border-radius: var(--r-md);
+    cursor: pointer; transition: all .2s;
+    min-width: 110px;
+  }
+  .date-pill:hover { border-color: var(--rule-bold); background: var(--slab); }
+  .date-pill.active {
+    border-color: var(--vermillion);
+    background: var(--vermillion-soft);
+  }
+  .date-pill .wd {
+    font-weight: 500; font-size: 10px; letter-spacing: .2em;
+    text-transform: uppercase; color: var(--dust);
+  }
+  .date-pill .lbl {
+    font-family: 'Instrument Serif', serif; font-style: italic;
+    font-size: 22px; color: var(--paper); margin-top: 2px;
+  }
+  .date-pill .ct {
+    font-family: 'Instrument Serif', serif;
+    font-size: 13px; color: var(--vermillion); margin-top: 4px;
+  }
+  .date-pill.active .ct { color: var(--vermillion); }
+
+  /* ============ RANGE SLIDER ============ */
+  .slider-track {
+    position: relative; height: 4px; background: var(--rule); border-radius: 999px;
+    margin: 24px 0 8px;
+  }
+  .slider-fill {
+    position: absolute; top: 0; bottom: 0;
+    background: var(--vermillion); border-radius: 999px;
+  }
+  .slider-knob {
+    position: absolute; top: 50%; width: 18px; height: 18px;
+    background: var(--paper); border: 2px solid var(--vermillion);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+  }
+  input[type=range].editorial {
+    -webkit-appearance: none; width: 100%; height: 4px;
+    background: var(--rule); border-radius: 999px; outline: none;
+  }
+  input[type=range].editorial::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 18px; height: 18px;
+    background: var(--paper); border: 2px solid var(--vermillion);
+    border-radius: 50%; cursor: pointer;
+  }
+
+  /* ============ NOW PLAYING ============ */
+  .now-card {
+    background: linear-gradient(135deg, var(--graphite) 0%, var(--slab) 100%);
+    border: 1px solid var(--rule-bold);
+    border-radius: var(--r-xl);
+    position: relative; overflow: hidden;
+  }
+  .now-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--vermillion), transparent);
+    animation: scan 2.4s linear infinite;
+  }
+  @keyframes scan {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+
+  /* ============ WIRE (LOG) ============ */
+  .wire {
+    background: var(--graphite);
+    border: 1px solid var(--rule-bold);
+    border-radius: var(--r-lg);
+    overflow: hidden;
+  }
+  .wire .entry {
+    display: grid; grid-template-columns: 56px 1fr;
+    gap: 16px;
+    padding: 9px 22px;
+    border-bottom: 1px solid rgba(237,231,218,.04);
+    align-items: baseline;
+  }
+  .wire .entry:last-child { border-bottom: none; }
+  .wire .entry .ord {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-style: italic; font-size: 14px; color: var(--dust);
+    text-align: right;
+  }
+  .wire .entry .txt {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: 15.5px; line-height: 1.45;
+    color: var(--parchment);
+    word-break: break-word;
+  }
+  .wire .e-ai     .txt { color: #d4a3ff; }
+  .wire .e-report .txt { color: var(--jade); }
+  .wire .e-apply  .txt { color: var(--vermillion); font-weight: 500; }
+  .wire .e-skip   .txt { color: var(--dust); font-size: 14px; }
+  .wire .e-tamat  .txt { color: #b6e7c8; font-weight: 500; }
+  .wire .e-error  .txt { color: #ff8b75; }
+  .wire .e-main   .txt { color: var(--sand); }
+
+  /* ============ TICKER ============ */
+  .ticker {
+    overflow: hidden; background: var(--ink); position: relative;
+    border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule);
+  }
+  .ticker-track {
+    display: inline-flex; gap: 56px; padding: 14px 0;
+    white-space: nowrap; animation: marquee 60s linear infinite;
+  }
+  @keyframes marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  .ticker .item {
+    font-weight: 500;
+    font-size: 11.5px; letter-spacing: .2em;
+    color: var(--sand); text-transform: uppercase;
+  }
+  .ticker .item .dot {
+    display: inline-block; width: 4px; height: 4px; background: var(--vermillion);
+    border-radius: 50%; margin: 0 14px 1px; vertical-align: middle;
+  }
+
+  /* ============ SECTION HEAD ============ */
+  .section-head {
+    display: grid; grid-template-columns: auto 1fr auto; gap: 22px;
+    align-items: baseline; padding-bottom: 16px;
+    border-bottom: 1px solid var(--rule-bold);
+  }
+  .section-head .sno {
+    font-weight: 600;
+    font-size: 10.5px; letter-spacing: .32em;
+    color: var(--vermillion); text-transform: uppercase;
+  }
+  .section-head .stitle {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: 40px; letter-spacing: -.01em;
+    color: var(--paper); font-style: italic;
+  }
+  .section-head .smeta {
+    font-weight: 400;
+    font-size: 11px; letter-spacing: .24em;
+    color: var(--dust); text-transform: uppercase;
+  }
+
+  /* ============ MARKDOWN VIEWER ============ */
+  .md-view {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: 17px; line-height: 1.65;
+    color: var(--parchment);
+  }
+  .md-view h1 { font-size: 36px; color: var(--paper); margin: 1em 0 .4em; font-style: italic; }
+  .md-view h2 { font-size: 22px; color: var(--paper); margin: 1.4em 0 .4em; padding-top: .8em; border-top: 1px solid var(--rule); }
+  .md-view h3 { font-size: 18px; color: var(--paper); margin: 1.2em 0 .3em; }
+  .md-view p { margin: .6em 0; }
+  .md-view strong { color: var(--vermillion); font-weight: 500; }
+  .md-view code { background: var(--graphite); padding: 2px 6px; border-radius: 4px;
+                   font-size: 14px; color: var(--sand); }
+  .md-view table { width: 100%; border-collapse: collapse; margin: 1em 0;
+                    border: 1px solid var(--rule); border-radius: var(--r-md); overflow: hidden; }
+  .md-view th, .md-view td { padding: 10px 14px; text-align: left;
+                              border-bottom: 1px solid var(--rule); font-size: 15px; }
+  .md-view th { background: var(--graphite); color: var(--paper); font-weight: 500;
+                font-family: 'Bricolage Grotesque', sans-serif;
+                font-size: 11px; letter-spacing: .2em; text-transform: uppercase; }
+  .md-view blockquote {
+    border-left: 3px solid var(--vermillion); padding: 4px 16px;
+    margin: .8em 0; background: var(--vermillion-soft);
+    border-radius: 0 var(--r-sm) var(--r-sm) 0;
+    color: var(--paper);
+  }
+  .md-view hr { border: 0; border-top: 1px solid var(--rule-bold); margin: 2em 0; }
+  .md-view ul, .md-view ol { padding-left: 1.6em; margin: .6em 0; }
+  .md-view li { margin: .25em 0; }
+
+  /* ============ MISC ============ */
+  .hairline { height: 1px; background: var(--rule); }
+  .hairline-bold { height: 1px; background: var(--rule-bold); }
+  .scrollbox { scrollbar-width: thin; scrollbar-color: var(--graphite) var(--ink); }
+  .scrollbox::-webkit-scrollbar { width: 8px; }
+  .scrollbox::-webkit-scrollbar-thumb { background: var(--graphite); border-radius: 999px; }
+  .scrollbox::-webkit-scrollbar-track { background: var(--ink); }
+
+  @media (max-width: 900px) {
+    .ledger summary {
+      grid-template-columns: 60px 56px 86px 1fr auto;
+      gap: 12px; padding: 14px 16px;
+    }
+    .ledger .big-idx { font-size: 28px; }
+    .ledger .row-position, .ledger .row-salary, .ledger .row-time { display: none; }
+    .ai-body { padding-left: 22px; }
+    .heatmap { grid-template-columns: 40px repeat(24, 1fr); gap: 2px; }
+    .heat-row-label { font-size: 8px; }
+  }
+</style>
+</head>
+
+<body x-data="dashboard()" x-init="boot()" class="grain vignette relative" style="z-index:1;">
+
+<!-- ════════════════════════════════════════════════════════════════
+     NAV TABS (sticky)
+     ════════════════════════════════════════════════════════════════ -->
+<div class="nav-shell mt-6">
+  <button class="nav-pill" :class="view==='today' ? 'active' : ''" @click="view='today'">
+    Today <span class="badge" x-text="stats.today?.total ?? 0"></span>
+  </button>
+  <button class="nav-pill" :class="view==='history' ? 'active' : ''" @click="view='history'; loadHistory()">
+    History <span class="badge" x-text="historyDays.length || ''"></span>
+  </button>
+  <button class="nav-pill" :class="view==='wire' ? 'active' : ''" @click="view='wire'">
+    Wire <span class="badge" x-text="logLines.length || ''"></span>
+  </button>
+</div>
+
+<!-- FLOATING NOW-PLAYING DOCK (CD-style) -->
+<div class="now-dock" :class="(current.platform ? '' : 'is-idle') + (dockCollapsed ? ' collapsed' : '')"
+     @click="dockCollapsed && (dockCollapsed = false)">
+
+  <!-- collapsed mini = just the CD ring -->
+  <template x-if="dockCollapsed">
+    <div class="cd-ring" style="width: 50px; height: 50px; margin: 0;">
+      <div class="spinner"></div>
+      <svg viewBox="0 0 120 120">
+        <defs>
+          <linearGradient id="cdGradientMini" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#E2401C"/>
+            <stop offset="100%" stop-color="#ff6b3d"/>
+          </linearGradient>
+        </defs>
+        <circle class="track" cx="60" cy="60" r="50"/>
+        <circle class="fill" cx="60" cy="60" r="50"
+                stroke="url(#cdGradientMini)"
+                :stroke-dasharray="314.16"
+                :stroke-dashoffset="314.16 - (314.16 * stripPct() / 100)"/>
+      </svg>
+      <div class="center">
+        <div class="num-big" style="font-size:14px;" x-text="stripPct() + '%'"></div>
+      </div>
+    </div>
+  </template>
+
+  <!-- expanded -->
+  <template x-if="!dockCollapsed">
+    <div>
+      <div class="dock-head">
+        <div class="dot-wrap">
+          <div class="dot-core"></div>
+          <div class="dot-ring"></div>
+        </div>
+        <div class="h-label" x-text="current.platform ? 'ON THE FLOOR' : 'IDLE'"></div>
+        <button class="collapse-btn" @click.stop="dockCollapsed = true" title="minimize">⌄</button>
+      </div>
+
+      <div class="dock-body">
+        <div class="cd-ring">
+          <div class="spinner"></div>
+          <div class="orbit">
+            <span class="o-dot"></span>
+            <span class="o-dot"></span>
+            <span class="o-dot"></span>
+          </div>
+          <svg viewBox="0 0 120 120">
+            <defs>
+              <linearGradient id="cdGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#E2401C"/>
+                <stop offset="100%" stop-color="#ff6b3d"/>
+              </linearGradient>
+            </defs>
+            <circle class="track" cx="60" cy="60" r="50"/>
+            <circle class="fill" cx="60" cy="60" r="50"
+                    :stroke-dasharray="314.16"
+                    :stroke-dashoffset="314.16 - (314.16 * stripPct() / 100)"/>
+          </svg>
+          <div class="center">
+            <div class="num-big" x-text="current.total ?? 0"></div>
+            <div class="num-sub">of <span class="num not-italic" x-text="current.cap ?? 20"></span> · batch <span class="num not-italic" x-text="current.batch ?? 0"></span></div>
+          </div>
+        </div>
+
+        <div class="dock-meta-row">
+          <span class="pl-name" x-text="current.platform || '——'"></span>
+          <span class="pl-batch" x-text="stripPct() + '% cap'"></span>
+        </div>
+
+        <div class="dock-company typewriter-cursor"
+             x-text="extractCompany() || (current.last_action || 'awaiting…').replace(/^\[\w+\]\s*/, '').slice(0, 60)"></div>
+        <div class="dock-position" x-text="extractPosition() || (current.platform ? 'standby' : '')"></div>
+      </div>
+
+      <div class="dock-foot">
+        <div class="stat">
+          <div class="v"><span class="num" x-text="stats.today?.total ?? 0"></span></div>
+          <div class="k">today</div>
+        </div>
+        <div class="stat">
+          <div class="v"><span class="num not-italic" x-text="uptimeStr()"></span></div>
+          <div class="k">uptime</div>
+        </div>
+      </div>
+    </div>
+  </template>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     VIEW: TODAY
+     ════════════════════════════════════════════════════════════════ -->
+<div x-show="view==='today'" x-transition:enter="transition ease-out duration-400" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
+
+<!-- COVER -->
+<section class="relative" style="padding: 40px clamp(24px, 5vw, 72px) 60px;">
+
+  <!-- MASTHEAD -->
+  <div class="flex items-baseline justify-between border-b border-paper/15 pb-4 fade-in flex-wrap gap-4 mb-12">
+    <div class="flex items-center gap-6">
+      <div class="kicker text-vermillion">DISPATCH</div>
+      <div class="kicker">N°<span class="num" x-text="String(stats.today?.total ?? 0).padStart(3,'0')"></span></div>
+      <div class="kicker">VOL. 001</div>
+    </div>
+    <div class="flex items-center gap-6">
+      <div class="kicker" x-text="todayLong()"></div>
+      <div class="kicker">JAKARTA</div>
+      <div class="kicker flex items-center gap-2">
+        <span :class="dashboardOnline ? 'pulse-dot' : 'pulse-dot dot-idle'"></span>
+        <span x-text="dashboardOnline ? 'LIVE' : 'IDLE'"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- COVER GRID -->
+  <div class="grid lg:grid-cols-12 gap-10 lg:gap-16">
+
+    <!-- PORTRAIT — integrated, rounded, glowing -->
+    <div class="lg:col-span-5 fade-in" style="animation-delay: .15s">
+      <div class="portrait-frame" style="aspect-ratio: 4/5;">
+        <img
+          src="https://media.licdn.com/dms/image/v2/D5603AQFtknHPzT9SGw/profile-displayphoto-crop_800_800/B56ZyfKnODKkAI-/0/1772196886866?e=1780531200&v=beta&t=m5owaQjIbIU5kRUOt39ncGfG-hK5AUOZv1mxCvg4200"
+          alt="Yoel Andreas Manoppo"
+          onerror="this.style.display='none'; this.parentElement.style.background='linear-gradient(135deg,#22201D,#0E0D0B)'; this.parentElement.insertAdjacentHTML('afterbegin', '<div style=&quot;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:Instrument Serif;font-size:180px;color:#E2401C;font-style:italic;&quot;>YA</div>');"
+        />
+        <div class="portrait-tag">PORTRAIT · MAY 2026</div>
+      </div>
+
+      <div class="mt-6 grid grid-cols-2 gap-5">
+        <div class="surface" style="padding: 14px 16px;">
+          <div class="label mb-1">SUBJECT</div>
+          <div class="reading text-paper" style="font-size:17px;">Yoel A. Manoppo</div>
+        </div>
+        <div class="surface" style="padding: 14px 16px;">
+          <div class="label mb-1">DISCIPLINE</div>
+          <div class="reading text-paper" style="font-size:17px;">Forward Deployed · AI</div>
+        </div>
+        <div class="surface" style="padding: 14px 16px;">
+          <div class="label mb-1">BASE</div>
+          <div class="reading text-paper" style="font-size:17px;">Jakarta, ID</div>
+        </div>
+        <div class="surface" style="padding: 14px 16px;">
+          <div class="label mb-1">FILED AT</div>
+          <div class="reading text-paper" style="font-size:17px;" x-text="stats.session?.started_at || '——'"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HEADLINE -->
+    <div class="lg:col-span-7">
+
+      <p class="kicker mb-7 fade-in" style="animation-delay: .25s">A working brief, dispatched continuously</p>
+
+      <h1 class="display text-paper" style="font-size: clamp(48px, 7.4vw, 116px);">
+        <span class="reveal-word" style="animation-delay: .35s">The</span>
+        <span class="reveal-word" style="animation-delay: .50s">application</span>
+        <span class="reveal-word" style="animation-delay: .65s">is</span>
+        <span class="reveal-word it" style="animation-delay: .82s">the work.</span>
+      </h1>
+
+      <p class="reading mt-8 max-w-xl fade-in" style="animation-delay: 1s">
+        A multi-platform telemetry of one engineer running an autonomous applicant of his own
+        making — Glints, JobStreet, LinkedIn, Indeed — each lowongan met with a small
+        rehearsal of intent and a written record of the encounter.
+      </p>
+
+      <!-- METRICS LOCKUP — soft cards, not edge-shared -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-14 fade-in" style="animation-delay: 1.15s">
+        <div class="stat-card">
+          <div class="label">DISPATCHED · TODAY</div>
+          <div class="display text-paper mt-4" style="font-size: clamp(56px, 8vw, 104px);">
+            <span class="num" x-text="String(stats.today?.total ?? 0).padStart(3,'0')"></span>
+          </div>
+          <div class="kicker mt-3 text-vermillion" x-text="stats.today?.date || '——'"></div>
+        </div>
+        <div class="stat-card">
+          <div class="label">CUMULATIVE</div>
+          <div class="display text-paper mt-4" style="font-size: clamp(56px, 8vw, 104px);">
+            <span class="num" x-text="String(stats.all_time?.total_applied ?? 0).padStart(3,'0')"></span>
+          </div>
+          <div class="kicker mt-3">SINCE OPENING</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">ON THE FLOOR</div>
+          <div class="display text-paper mt-4" style="font-size: clamp(28px, 4vw, 46px); font-style: italic;"
+               x-text="stats.session?.current_platform || '——'"></div>
+          <div class="kicker mt-3">
+            BATCH <span class="num" x-text="stats.session?.current_batch ?? 0"></span>
+            ·
+            <span class="num" x-text="(stats.session?.current_total ?? 0) + '/' + (stats.session?.platform_cap ?? 20)"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-track">
+    <template x-for="i in 2">
+      <div class="inline-flex gap-14">
+        <template x-for="p in platforms">
+          <span class="item">
+            <span x-text="p.name"></span>
+            <span class="dot"></span>
+            <span x-text="(stats.today?.per_platform?.[p.name] ?? 0) + ' dispatched'"></span>
+            <span class="dot"></span>
+            <span x-text="isPlatformDone(p.name) ? 'FINIS' : (isActivePlatform(p.name) ? 'on floor' : 'standby')"></span>
+          </span>
+        </template>
+        <span class="item">— DISPATCH N°<span x-text="String(stats.today?.total ?? 0).padStart(3,'0')"></span> —</span>
+        <span class="item">YOEL ANDREAS MANOPPO · JAKARTA</span>
+      </div>
+    </template>
+  </div>
+</div>
+
+<!-- THE FLOOR -->
+<main style="padding: 80px clamp(24px, 5vw, 72px);" class="space-y-24">
+
+  <!-- §01 INSTRUMENTS -->
+  <section id="instruments">
+    <div class="section-head">
+      <div class="sno">§ 01</div>
+      <h2 class="stitle">Instruments</h2>
+      <div class="smeta">vertical readouts · cap 20 each</div>
+    </div>
+
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-5 mt-10">
+      <template x-for="p in platforms" :key="p.name">
+        <article class="gauge">
+          <template x-if="isPlatformDone(p.name)">
+            <div class="finis-stamp">FINIS</div>
+          </template>
+
+          <header class="flex items-center justify-between mb-7">
+            <div class="flex items-center gap-3">
+              <span :class="isActivePlatform(p.name) ? 'pulse-dot' : (isPlatformDone(p.name) ? 'pulse-dot dot-done' : 'pulse-dot dot-idle')"></span>
+              <span class="smallcaps text-paper" x-text="p.name"></span>
+            </div>
+            <span class="label" x-text="(isPlatformDone(p.name) ? 'CLOSED' : (isActivePlatform(p.name) ? 'OPEN' : 'STDBY'))"></span>
+          </header>
+
+          <div class="flex items-end gap-6 mb-6">
+            <div class="bar-track">
+              <div class="bar-fill"
+                   :class="isPlatformDone(p.name) ? 'is-done' : ''"
+                   :style="'height: ' + gaugePct(p.name) + '%'"></div>
+            </div>
+            <div>
+              <div class="display text-paper" style="font-size: 72px; line-height: 1;">
+                <span class="num" x-text="stats.today?.per_platform?.[p.name] ?? 0"></span>
+              </div>
+              <div class="label mt-1">of <span class="num not-italic" x-text="stats.today?.caps?.[p.name] ?? 20"></span></div>
+            </div>
+          </div>
+
+          <div class="hairline mb-4"></div>
+          <div class="flex items-center justify-between">
+            <span class="label" x-text="gaugePct(p.name) + '% capacity'"></span>
+            <span class="label" :class="p.colorClass" x-text="p.tagShort"></span>
+          </div>
+        </article>
+      </template>
+    </div>
+  </section>
+
+  <!-- §02 NOW PLAYING -->
+  <section id="now">
+    <div class="section-head">
+      <div class="sno">§ 02</div>
+      <h2 class="stitle">Now Playing</h2>
+      <div class="smeta">currently on the floor</div>
+    </div>
+
+    <div class="now-card mt-10 p-10 lg:p-14">
+      <div class="flex items-center gap-4 mb-10 flex-wrap">
+        <span :class="current.platform ? 'pulse-dot' : 'pulse-dot dot-idle'"></span>
+        <span class="kicker text-vermillion" x-text="current.platform ? 'ON THE FLOOR' : 'IDLE'"></span>
+        <span class="kicker" x-text="current.platform ? (current.platform.toUpperCase() + ' · BATCH ' + (current.batch ?? 0) + ' · ' + (current.total ?? 0) + '/' + (current.cap ?? 20)) : ''"></span>
+      </div>
+
+      <div class="display text-paper" style="font-size: clamp(36px, 5.4vw, 76px); line-height: 1.02;"
+           x-text="extractCompany() || 'awaiting next dispatch'"></div>
+      <div class="reading text-sand mt-3" style="font-size: 24px; font-style: italic;"
+           x-text="extractPosition() || '—'"></div>
+
+      <div class="mt-12 grid md:grid-cols-2 gap-x-12 gap-y-6">
+        <div>
+          <div class="label mb-2">LAST ACTION</div>
+          <div class="reading text-parchment" style="font-size: 16px; line-height: 1.5;"
+               x-text="current.last_action || '——'"></div>
+        </div>
+        <div>
+          <div class="label mb-2">SESSION UPTIME</div>
+          <div class="display text-paper" style="font-size: 48px;">
+            <span class="num not-italic" x-text="uptimeStr()"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- §03 LEDGER -->
+  <section id="ledger">
+    <div class="section-head">
+      <div class="sno">§ 03</div>
+      <h2 class="stitle">The Ledger</h2>
+      <div class="smeta"><span x-text="applies.length"></span> entries · newest first</div>
+    </div>
+
+    <div class="ledger mt-8">
+      <template x-for="a in applies.slice(0, 50)" :key="a.idx">
+        <details class="slide-in">
+          <summary>
+            <div class="big-idx">№<span x-text="a.idx"></span></div>
+            <div class="row-time" x-text="a.applied_at"></div>
+            <div :class="'platform-tag tag-' + a.platform.toLowerCase()" x-text="a.platform"></div>
+            <div>
+              <div class="text-paper" style="font-family:'Instrument Serif',serif; font-size:21px; line-height:1.2;"
+                   x-text="a.company"></div>
+              <div class="row-position mt-1" x-text="a.position"></div>
+            </div>
+            <div class="row-salary" x-text="a.salary"></div>
+            <div class="label text-dust hidden md:block">expand</div>
+            <div class="text-vermillion" style="font-family:'Instrument Serif',serif; font-size:24px; line-height:1; font-style:italic;">→</div>
+          </summary>
+          <div class="ai-body essay" x-html="renderMd(a.ai_summary_md || '_Tidak ada catatan untuk entry ini._')"></div>
+        </details>
+      </template>
+      <template x-if="applies.length === 0">
+        <div class="text-dust p-16 text-center" style="font-family:'Instrument Serif',serif; font-size:26px; font-style:italic;">
+          The ledger is empty today.
+        </div>
+      </template>
+      <template x-if="applies.length > 50">
+        <div class="text-center mt-6">
+          <button class="nav-pill" @click="view='history'; loadHistory()">View all in History →</button>
+        </div>
+      </template>
+    </div>
+  </section>
+
+  <!-- §04 ESSAYS -->
+  <section id="essays" x-show="retros.length > 0">
+    <div class="section-head">
+      <div class="sno">§ 04</div>
+      <h2 class="stitle">Essays</h2>
+      <div class="smeta"><span x-text="retros.length"></span> platform retrospectives</div>
+    </div>
+
+    <div class="space-y-16 mt-12">
+      <template x-for="r in retros" :key="r.platform + r.closed_at">
+        <article class="surface-elev p-8 lg:p-12 grid lg:grid-cols-12 gap-10">
+          <header class="lg:col-span-3">
+            <div :class="'platform-tag tag-' + r.platform.toLowerCase()" class="inline-block mb-5"
+                 x-text="r.platform"></div>
+            <div class="display text-paper" style="font-size: 64px; line-height: .95; font-style: italic;"
+                 x-text="r.applied_count"></div>
+            <div class="label mt-2">lowongan dispatched</div>
+            <div class="hairline my-6"></div>
+            <div class="label">CLOSED AT</div>
+            <div class="reading text-paper mt-1" style="font-size: 22px;" x-text="r.closed_at"></div>
+            <div class="mt-6">
+              <span class="finis-stamp" style="position: static; display: inline-block; transform: rotate(-4deg);">FINIS</span>
+            </div>
+          </header>
+          <div class="lg:col-span-9">
+            <div class="ai-body essay" style="padding: 0; max-width: none;" x-html="renderMd(r.retrospective_md)"></div>
+          </div>
+        </article>
+      </template>
+    </div>
+  </section>
+
+</main>
+
+</div>
+<!-- /TODAY -->
+
+<!-- ════════════════════════════════════════════════════════════════
+     VIEW: HISTORY
+     ════════════════════════════════════════════════════════════════ -->
+<div x-show="view==='history'" x-transition:enter="transition ease-out duration-400" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
+<section style="padding: 40px clamp(24px, 5vw, 72px) 100px;" class="space-y-16">
+
+  <header class="text-center pop">
+    <div class="kicker text-vermillion mb-3">§ ARCHIVE</div>
+    <h1 class="display text-paper" style="font-size: clamp(56px, 9vw, 130px);">
+      The <span class="it">Archive</span>.
+    </h1>
+    <p class="reading max-w-2xl mx-auto mt-6">
+      Every dispatch ever filed. Browse by date, slice by hour, see when the floor
+      was busiest. Each ledger is preserved verbatim.
+    </p>
+  </header>
+
+  <!-- WEEKLY STATS LOCKUP -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-5 pop" style="animation-delay: .15s">
+    <div class="stat-card">
+      <div class="label">TODAY</div>
+      <div class="display text-paper mt-3" style="font-size: 64px;"><span class="num" x-text="historyStat('today')"></span></div>
+      <div class="kicker mt-2 text-vermillion">DISPATCHED</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">YESTERDAY</div>
+      <div class="display text-paper mt-3" style="font-size: 64px;"><span class="num" x-text="historyStat('yesterday')"></span></div>
+      <div class="kicker mt-2">DAY BEFORE</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">SEMINGGU</div>
+      <div class="display text-paper mt-3" style="font-size: 64px;"><span class="num" x-text="historyStat('week')"></span></div>
+      <div class="kicker mt-2">LAST 7 DAYS</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">ALL TIME</div>
+      <div class="display text-paper mt-3" style="font-size: 64px;"><span class="num" x-text="historyStat('total')"></span></div>
+      <div class="kicker mt-2">CUMULATIVE</div>
+    </div>
+  </div>
+
+  <!-- HEATMAP -->
+  <section>
+    <div class="section-head">
+      <div class="sno">§ H1</div>
+      <h2 class="stitle">Heatmap</h2>
+      <div class="smeta">
+        <select class="bg-transparent border border-paper/20 px-3 py-1 rounded-full text-sm"
+                @change="loadHeatmap($event.target.value)">
+          <option value="7">last 7 days</option>
+          <option value="14" selected>last 14 days</option>
+          <option value="30">last 30 days</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="surface-elev mt-8 p-6 lg:p-10">
+      <!-- col labels -->
+      <div class="heatmap mb-3" style="grid-template-rows: auto;">
+        <div></div>
+        <template x-for="h in 24">
+          <div class="heat-col-label" x-text="(h - 1).toString().padStart(2,'0')"></div>
+        </template>
+      </div>
+      <!-- rows -->
+      <template x-for="(iso, i) in (heatmap.dates || [])" :key="iso">
+        <div class="heatmap mb-1">
+          <div class="heat-row-label">
+            <span><span x-text="heatmap.weekdays[i]"></span> · <span x-text="heatmap.day_labels[i]"></span></span>
+          </div>
+          <template x-for="h in 24">
+            <div class="heat-cell"
+                 :class="(heatmap.grid?.[iso]?.[h-1] ?? 0) > 0 ? 'has-data' : ''"
+                 :style="cellStyle(heatmap.grid?.[iso]?.[h-1] ?? 0)">
+              <div class="heat-tip">
+                <span x-text="(heatmap.grid?.[iso]?.[h-1] ?? 0) + ' apply'"></span>
+                · <span x-text="(h-1).toString().padStart(2,'0') + ':00'"></span>
+                · <span x-text="heatmap.day_labels[i]"></span>
+              </div>
+            </div>
+          </template>
+        </div>
+      </template>
+      <div class="flex items-center justify-end gap-3 mt-6">
+        <span class="label">LESS</span>
+        <div class="flex gap-1">
+          <div class="heat-cell" style="width:16px; height:16px;"></div>
+          <div class="heat-cell has-data" style="width:16px; height:16px; opacity:.25;"></div>
+          <div class="heat-cell has-data" style="width:16px; height:16px; opacity:.5;"></div>
+          <div class="heat-cell has-data" style="width:16px; height:16px; opacity:.75;"></div>
+          <div class="heat-cell has-data" style="width:16px; height:16px;"></div>
+        </div>
+        <span class="label">MORE</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- FILTERS + DATE PICKER -->
+  <section>
+    <div class="section-head">
+      <div class="sno">§ H2</div>
+      <h2 class="stitle">Pilih Tanggal</h2>
+      <div class="smeta"><span x-text="historyDays.length"></span> files arsip</div>
+    </div>
+
+    <div class="mt-8 surface-elev p-6 lg:p-8">
+      <div class="date-grid">
+        <template x-for="d in historyDays" :key="d.ddmmyyyy">
+          <div class="date-pill"
+               :class="selectedDate === d.ddmmyyyy ? 'active' : ''"
+               @click="selectDate(d.ddmmyyyy)">
+            <div class="wd" x-text="d.weekday"></div>
+            <div class="lbl" x-text="d.day_label"></div>
+            <div class="ct" x-text="d.total + ' dispatch'"></div>
+          </div>
+        </template>
+        <template x-if="historyDays.length === 0">
+          <div class="text-dust p-6" style="font-family:'Instrument Serif',serif; font-style:italic; font-size:20px;">
+            Arsip kosong. File pertama akan muncul setelah dispatch hari ini.
+          </div>
+        </template>
+      </div>
+
+      <!-- TIME RANGE SLIDER -->
+      <div class="mt-10 grid md:grid-cols-2 gap-8">
+        <div>
+          <div class="flex justify-between items-baseline">
+            <div class="label">RENTANG JAM</div>
+            <div class="reading" style="font-size:18px;">
+              <span class="num" x-text="String(filter.hourFrom).padStart(2,'0')"></span>:00
+              —
+              <span class="num" x-text="String(filter.hourTo).padStart(2,'0')"></span>:59
+            </div>
+          </div>
+          <div class="mt-3 space-y-3">
+            <div>
+              <div class="label mb-1" style="letter-spacing:.16em;">FROM</div>
+              <input type="range" min="0" max="23" class="editorial"
+                     x-model.number="filter.hourFrom" @input="loadFiltered()" />
+            </div>
+            <div>
+              <div class="label mb-1" style="letter-spacing:.16em;">TO</div>
+              <input type="range" min="0" max="23" class="editorial"
+                     x-model.number="filter.hourTo" @input="loadFiltered()" />
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="label mb-2">RENTANG TANGGAL</div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <div class="label mb-1" style="letter-spacing:.16em;">FROM</div>
+              <input type="date" x-model="filter.fromDate" @change="loadFiltered()"
+                     class="w-full bg-graphite border border-paper/20 rounded-lg px-3 py-2 text-paper"
+                     style="font-family: 'Bricolage Grotesque'; color-scheme: dark;" />
+            </div>
+            <div>
+              <div class="label mb-1" style="letter-spacing:.16em;">TO</div>
+              <input type="date" x-model="filter.toDate" @change="loadFiltered()"
+                     class="w-full bg-graphite border border-paper/20 rounded-lg px-3 py-2 text-paper"
+                     style="font-family: 'Bricolage Grotesque'; color-scheme: dark;" />
+            </div>
+          </div>
+
+          <div class="mt-6">
+            <div class="label">HASIL FILTER</div>
+            <div class="display text-paper mt-1" style="font-size: 56px;">
+              <span class="num" x-text="filtered.total ?? 0"></span>
+            </div>
+            <div class="kicker mt-1 text-vermillion">DISPATCH DALAM RENTANG</div>
+
+            <!-- per-platform mini bars -->
+            <div class="mt-4 space-y-1.5">
+              <template x-for="p in platforms">
+                <div class="flex items-center gap-3">
+                  <span class="label" style="min-width:80px;" x-text="p.name"></span>
+                  <div class="flex-1 h-1.5 bg-paper/10 rounded-full overflow-hidden">
+                    <div class="h-full"
+                         :class="'bg-' + p.color"
+                         :style="'width: ' + filterBarPct(p.name) + '%; background:' + p.hex"></div>
+                  </div>
+                  <span class="reading num not-italic" style="font-size:15px; min-width:30px; text-align:right;"
+                        x-text="filtered.by_platform?.[p.name] ?? 0"></span>
+                </div>
+              </template>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SELECTED DAY DETAIL -->
+  <section x-show="selectedDay">
+    <div class="section-head">
+      <div class="sno">§ H3</div>
+      <h2 class="stitle" x-text="'Dispatch · ' + (selectedDay?.date || '——')"></h2>
+      <div class="smeta">
+        <span x-text="(selectedDay?.total ?? 0) + ' entries'"></span>
+        ·
+        <button @click="dayMdView = !dayMdView" class="hover:text-paper" x-text="dayMdView ? '↺ ledger' : '⤴ raw markdown'"></button>
+      </div>
+    </div>
+
+    <!-- per-platform pills -->
+    <div class="flex flex-wrap gap-3 mt-6">
+      <template x-for="p in platforms">
+        <div class="surface px-4 py-2.5 flex items-center gap-3">
+          <span :class="'platform-tag tag-' + p.name.toLowerCase()" x-text="p.tagShort"></span>
+          <span class="reading text-paper" style="font-size:18px;">
+            <span class="num" x-text="selectedDay?.per_platform?.[p.name] ?? 0"></span>
+          </span>
+        </div>
+      </template>
+    </div>
+
+    <!-- LEDGER for selected day -->
+    <div class="ledger mt-8" x-show="!dayMdView">
+      <template x-for="a in (selectedDay?.applies || [])" :key="a.idx">
+        <details class="slide-in">
+          <summary>
+            <div class="big-idx">№<span x-text="a.idx"></span></div>
+            <div class="row-time" x-text="a.applied_at"></div>
+            <div :class="'platform-tag tag-' + a.platform.toLowerCase()" x-text="a.platform"></div>
+            <div>
+              <div class="text-paper" style="font-family:'Instrument Serif',serif; font-size:21px; line-height:1.2;"
+                   x-text="a.company"></div>
+              <div class="row-position mt-1" x-text="a.position"></div>
+            </div>
+            <div class="row-salary" x-text="a.salary"></div>
+            <div class="label text-dust hidden md:block">expand</div>
+            <div class="text-vermillion" style="font-family:'Instrument Serif',serif; font-size:24px; line-height:1; font-style:italic;">→</div>
+          </summary>
+          <div class="ai-body essay" x-html="renderMd(a.ai_summary_md || '_Tidak ada catatan._')"></div>
+        </details>
+      </template>
+    </div>
+
+    <!-- RAW MARKDOWN VIEW -->
+    <div class="surface-elev mt-8 p-10 lg:p-14" x-show="dayMdView">
+      <div class="md-view" x-html="renderMd(selectedDay?.raw_md || '')"></div>
+    </div>
+
+    <!-- RETROSPECTIVES of this day -->
+    <div x-show="(selectedDay?.retrospectives || []).length > 0" class="mt-16 space-y-12">
+      <div class="section-head">
+        <div class="sno">§ ESSAYS</div>
+        <h2 class="stitle">Hari ini · Essays</h2>
+        <div class="smeta"><span x-text="(selectedDay?.retrospectives || []).length"></span> retrospectives</div>
+      </div>
+      <template x-for="r in (selectedDay?.retrospectives || [])" :key="r.platform + r.closed_at">
+        <article class="surface-elev p-8 lg:p-12 grid lg:grid-cols-12 gap-10">
+          <header class="lg:col-span-3">
+            <div :class="'platform-tag tag-' + r.platform.toLowerCase()" class="inline-block mb-5"
+                 x-text="r.platform"></div>
+            <div class="display text-paper" style="font-size: 64px; line-height: .95; font-style: italic;"
+                 x-text="r.applied_count"></div>
+            <div class="label mt-2">lowongan dispatched</div>
+            <div class="hairline my-6"></div>
+            <div class="label">CLOSED AT</div>
+            <div class="reading text-paper mt-1" style="font-size: 22px;" x-text="r.closed_at"></div>
+            <div class="mt-6">
+              <span class="finis-stamp" style="position: static; display: inline-block; transform: rotate(-4deg);">FINIS</span>
+            </div>
+          </header>
+          <div class="lg:col-span-9">
+            <div class="ai-body essay" style="padding: 0; max-width: none;" x-html="renderMd(r.retrospective_md)"></div>
+          </div>
+        </article>
+      </template>
+    </div>
+
+  </section>
+
+  <!-- FILTERED RESULTS (from range filter) -->
+  <section x-show="filtered.items?.length > 0">
+    <div class="section-head">
+      <div class="sno">§ H4</div>
+      <h2 class="stitle">Hasil Rentang</h2>
+      <div class="smeta">
+        <span x-text="filter.fromDate"></span> → <span x-text="filter.toDate"></span>
+        · jam <span x-text="String(filter.hourFrom).padStart(2,'0')"></span>—<span x-text="String(filter.hourTo).padStart(2,'0')"></span>
+      </div>
+    </div>
+
+    <div class="ledger mt-8">
+      <template x-for="a in (filtered.items || []).slice(0, 100)" :key="a.iso_date + a.idx">
+        <details class="slide-in">
+          <summary>
+            <div class="big-idx">№<span x-text="a.idx"></span></div>
+            <div class="row-time" x-text="a.applied_at"></div>
+            <div :class="'platform-tag tag-' + a.platform.toLowerCase()" x-text="a.platform"></div>
+            <div>
+              <div class="text-paper" style="font-family:'Instrument Serif',serif; font-size:21px; line-height:1.2;"
+                   x-text="a.company"></div>
+              <div class="row-position mt-1" x-text="a.position + ' · ' + a.day_label"></div>
+            </div>
+            <div class="row-salary" x-text="a.salary"></div>
+            <div class="label text-dust hidden md:block">expand</div>
+            <div class="text-vermillion" style="font-family:'Instrument Serif',serif; font-size:24px; line-height:1; font-style:italic;">→</div>
+          </summary>
+          <div class="ai-body essay" x-html="renderMd(a.ai_summary_md || '_Tidak ada catatan._')"></div>
+        </details>
+      </template>
+    </div>
+  </section>
+
+</section>
+</div>
+<!-- /HISTORY -->
+
+<!-- ════════════════════════════════════════════════════════════════
+     VIEW: WIRE
+     ════════════════════════════════════════════════════════════════ -->
+<div x-show="view==='wire'" x-transition:enter="transition ease-out duration-400" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
+<section style="padding: 40px clamp(24px, 5vw, 72px) 100px;">
+  <div class="section-head">
+    <div class="sno">§ 05</div>
+    <h2 class="stitle">Wire</h2>
+    <div class="smeta">
+      <span x-text="logLines.length + ' lines'"></span>
+      ·
+      <span :class="sseConnected ? 'text-jade' : 'text-vermillion'"
+            x-text="sseConnected ? '● connected' : '○ disconnected'"></span>
+    </div>
+  </div>
+
+  <div class="wire mt-8 overflow-y-auto scrollbox" x-ref="logbox"
+       style="height: calc(100vh - 240px);">
+    <template x-for="(ln, i) in logLines.slice(-500)" :key="i">
+      <div :class="'entry ' + entryClass(ln)">
+        <span class="ord" x-text="i + 1"></span>
+        <span class="txt" x-text="ln"></span>
+      </div>
+    </template>
+    <template x-if="logLines.length === 0">
+      <div class="text-dust p-12 text-center" style="font-family:'Instrument Serif',serif; font-size:24px; font-style:italic;">
+        awaiting the wire...
+      </div>
+    </template>
+  </div>
+</section>
+</div>
+
+<!-- COLOPHON -->
+<footer class="border-t border-paper/15 mt-24" style="padding: 50px clamp(24px, 5vw, 72px) 70px;">
+  <div class="grid md:grid-cols-3 gap-10">
+    <div>
+      <div class="label mb-3">COLOPHON</div>
+      <p class="reading text-parchment" style="font-size: 15px;">
+        Set in Instrument Serif &amp; Bricolage Grotesque. Composed continuously
+        and reported in plain language.
+      </p>
+    </div>
+    <div>
+      <div class="label mb-3">CORRESPONDENCE</div>
+      <p class="reading text-parchment" style="font-size: 15px;">
+        Edited by Yoel Andreas Manoppo. Dispatched from
+        <span class="text-vermillion">localhost</span>.
+      </p>
+    </div>
+    <div>
+      <div class="label mb-3">IMPRINT</div>
+      <p class="reading text-parchment" style="font-size: 15px;">
+        YA · vol. 001 · printed continuously.
+      </p>
+    </div>
+  </div>
+
+  <div class="hairline-bold mt-10 mb-6"></div>
+  <div class="flex flex-wrap justify-between gap-4 smallcaps text-dust">
+    <span>©2026 YOEL ANDREAS MANOPPO</span>
+    <span>DISPATCH N°<span class="num not-italic" x-text="String(stats.today?.total ?? 0).padStart(3,'0')"></span></span>
+    <span>printed continuously</span>
+  </div>
+</footer>
+
+<script>
+function dashboard() {
+  return {
+    view: 'today',
+    dockCollapsed: false,
+    profile: {},
+    stats: { today: {}, all_time: {}, session: {} },
+    current: { platform: '', batch: 0, total: 0, cap: 20, last_action: '', tail: [] },
+    applies: [],
+    retros: [],
+    logLines: [],
+    sseConnected: false,
+    dashboardOnline: true,
+    bootedAt: Date.now(),
+    _tick: 0,
+    platforms: [
+      { name: 'Glints',    colorClass: 'tag-glints',    tagShort: 'gl', hex: '#a5c46e' },
+      { name: 'JobStreet', colorClass: 'tag-jobstreet', tagShort: 'js', hex: '#8a98d8' },
+      { name: 'LinkedIn',  colorClass: 'tag-linkedin',  tagShort: 'li', hex: '#9ab1c6' },
+      { name: 'Indeed',    colorClass: 'tag-indeed',    tagShort: 'in', hex: '#d4a665' },
+    ],
+
+    // history
+    historyDays: [],
+    heatmap: {},
+    selectedDate: '',
+    selectedDay: null,
+    dayMdView: false,
+    filter: { fromDate: '', toDate: '', hourFrom: 0, hourTo: 23 },
+    filtered: { total: 0, items: [], by_platform: {}, by_date: {} },
+
+    async boot() {
+      await this.loadProfile();
+      await this.refresh();
+      setInterval(() => this.refresh(), 3000);
+      setInterval(() => { this._tick++; }, 1000);
+      this.connectSSE();
+    },
+
+    async loadProfile() {
+      try { this.profile = await (await fetch('/api/profile')).json(); } catch {}
+    },
+
+    async refresh() {
+      try {
+        const [s, a, r, c] = await Promise.all([
+          fetch('/api/stats').then(x => x.json()),
+          fetch('/api/applies?limit=300').then(x => x.json()),
+          fetch('/api/retrospectives').then(x => x.json()),
+          fetch('/api/current').then(x => x.json()),
+        ]);
+        this.stats = s;
+        this.applies = a.items;
+        this.retros = r.items;
+        this.current = c;
+        this.dashboardOnline = true;
+      } catch (e) {
+        this.dashboardOnline = false;
+      }
+    },
+
+    async loadHistory() {
+      try {
+        const d = await (await fetch('/api/history/days')).json();
+        this.historyDays = d.items;
+        if (this.historyDays.length > 0 && !this.selectedDate) {
+          this.selectDate(this.historyDays[0].ddmmyyyy);
+          // default filter = today
+          this.filter.fromDate = this.historyDays[0].iso_date;
+          this.filter.toDate = this.historyDays[0].iso_date;
+        }
+        await this.loadHeatmap(14);
+        await this.loadFiltered();
+      } catch (e) { console.warn('history load fail', e); }
+    },
+
+    async loadHeatmap(days = 14) {
+      try {
+        const h = await (await fetch('/api/history/heatmap?days=' + days)).json();
+        this.heatmap = h;
+      } catch (e) {}
+    },
+
+    async selectDate(ddmmyyyy) {
+      this.selectedDate = ddmmyyyy;
+      try {
+        this.selectedDay = await (await fetch('/api/history/day/' + ddmmyyyy)).json();
+      } catch (e) { this.selectedDay = null; }
+    },
+
+    async loadFiltered() {
+      if (!this.filter.fromDate || !this.filter.toDate) return;
+      try {
+        const q = new URLSearchParams({
+          from_date: this.filter.fromDate,
+          to_date: this.filter.toDate,
+          hour_from: this.filter.hourFrom,
+          hour_to: this.filter.hourTo,
+        });
+        this.filtered = await (await fetch('/api/history/range?' + q)).json();
+      } catch (e) {}
+    },
+
+    historyStat(which) {
+      const today = (this.historyDays[0] || {}).total ?? 0;
+      const yest  = (this.historyDays[1] || {}).total ?? 0;
+      const week  = this.historyDays.slice(0, 7).reduce((s, d) => s + (d.total ?? 0), 0);
+      const total = this.historyDays.reduce((s, d) => s + (d.total ?? 0), 0);
+      return { today, yesterday: yest, week, total }[which];
+    },
+
+    cellStyle(count) {
+      if (!count) return '';
+      const max = this.heatmap.max_count || 1;
+      const intensity = Math.min(1, count / max);
+      // base vermillion, scaled by intensity
+      const op = .25 + intensity * .75;
+      return 'background: rgba(226, 64, 28, ' + op.toFixed(2) + ');';
+    },
+
+    filterBarPct(name) {
+      const v = this.filtered.by_platform?.[name] ?? 0;
+      const max = Math.max(1, ...Object.values(this.filtered.by_platform || {}));
+      return Math.round(v / max * 100);
+    },
+
+    connectSSE() {
+      try {
+        const es = new EventSource('/api/log/stream');
+        es.addEventListener('log', (ev) => {
+          this.logLines.push(ev.data);
+          if (this.logLines.length > 1000) this.logLines = this.logLines.slice(-1000);
+          this.$nextTick(() => {
+            const box = this.$refs.logbox;
+            if (box) box.scrollTop = box.scrollHeight;
+          });
+        });
+        es.onopen = () => { this.sseConnected = true; };
+        es.onerror = () => {
+          this.sseConnected = false;
+          setTimeout(() => this.connectSSE(), 3000);
+          es.close();
+        };
+      } catch {}
+    },
+
+    isPlatformDone(name) {
+      return Boolean(this.stats?.today?.platforms_done?.[name]);
+    },
+    isActivePlatform(name) {
+      return (this.stats?.session?.current_platform || '').toLowerCase() === name.toLowerCase();
+    },
+    gaugePct(name) {
+      const cnt = this.stats?.today?.per_platform?.[name] ?? 0;
+      const cap = this.stats?.today?.caps?.[name] ?? 20;
+      return Math.min(100, Math.round(cnt / cap * 100));
+    },
+    stripPct() {
+      const cur = this.current?.total ?? 0;
+      const cap = this.current?.cap ?? 20;
+      if (!cap) return 0;
+      return Math.min(100, Math.round(cur / cap * 100));
+    },
+
+    extractCompany() {
+      const ln = this.current?.last_action || '';
+      const m = ln.match(/APPLY\s+(.+?)\s+\|\s+(.+?)(?:\s+\||$)/i);
+      if (m) return m[1];
+      return '';
+    },
+    extractPosition() {
+      const ln = this.current?.last_action || '';
+      const m = ln.match(/APPLY\s+.+?\s+\|\s+(.+?)(?:\s+\||$)/i);
+      if (m) return m[1];
+      return '';
+    },
+
+    uptimeStr() {
+      const _ = this._tick;
+      const ms = Date.now() - this.bootedAt;
+      const s = Math.floor(ms / 1000);
+      const hh = String(Math.floor(s/3600)).padStart(2,'0');
+      const mm = String(Math.floor((s%3600)/60)).padStart(2,'0');
+      const ss = String(s % 60).padStart(2,'0');
+      return `${hh}:${mm}:${ss}`;
+    },
+
+    todayLong() {
+      const d = new Date();
+      const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+      return `${String(d.getDate()).padStart(2,'0')} ${months[d.getMonth()]} ${d.getFullYear()}`;
+    },
+
+    renderMd(md) {
+      if (!md) return '';
+      try { return marked.parse(md, { breaks: true }); } catch { return md; }
+    },
+
+    entryClass(line) {
+      if (line.includes('[ai] summary') || line.includes('[ai] retrospective') || line.includes('[ai] Model')) return 'e-ai';
+      if (line.includes('[report]'))                                            return 'e-report';
+      if (line.includes('APPLY '))                                              return 'e-apply';
+      if (line.includes('skip ('))                                              return 'e-skip';
+      if (line.includes('TAMAT') || line.includes('SELESAI') || line.includes('cap reached')) return 'e-tamat';
+      if (line.includes('crash') || line.includes('Error') || line.includes('gagal')) return 'e-error';
+      if (line.includes('[main]'))                                              return 'e-main';
+      return '';
+    },
+  };
+}
+</script>
+</body>
+</html>

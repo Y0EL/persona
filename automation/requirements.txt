@@ -1,3 +1,11 @@
 uiautomator2>=3.5.0
 loguru>=0.7.0
 python-docx>=1.1.0
+
+# AI helper — load .env untuk OPENROUTER_API_KEY
+python-dotenv>=1.0.0
+
+# Live dashboard (FastAPI + SSE) di http://127.0.0.1:8000
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+sse-starlette>=2.1.0

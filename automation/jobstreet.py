@@ -192,25 +192,83 @@ def _extract_detail_desc(d):
 
 
 def _select_resume(d):
-    """Pilih resume card pertama (profile(1).pdf / Default)."""
-    for kw in ["profile(1).pdf", "Default"]:
-        nodes = d.xpath(f'//*[contains(@text,"{kw}")]/ancestor::*[@clickable="true"][1]').all()
-        if nodes:
-            nodes[0].click()
-            time.sleep(T_TAP)
-            return True
-    # Fallback: tap center card resume pertama di area y=700-1200
-    all_clickable = d.xpath('//*[@clickable="true"]').all()
-    for n in all_clickable:
-        b = n.attrib.get("bounds", "")
-        r = _bounds_to_rect(b)
-        if r:
-            x1, y1, x2, y2 = r
-            if 650 < y1 < 1100 and (x2 - x1) > 700:
-                n.click()
-                time.sleep(T_TAP)
-                return True
+    """
+    Pilih resume Default (profile(1).pdf) di Step 1.
+    Cari node text 'Default' (badge), tap CENTER row clickable parent via koord.
+    Fallback: tap row pertama yang ada text mengandung '.pdf'.
+    """
+    try:
+        # Cari row dengan badge "Default"
+        default_nodes = d.xpath('//*[@text="Default"]').all()
+        for n in default_nodes:
+            b = n.attrib.get("bounds", "")
+            m = re.match(r"\[(\d+),(\d+)\]\[(\d+),(\d+)\]", b)
+            if not m:
+                continue
+            default_y = int(m.group(2))
+            # Cari clickable parent row di sekitar y default badge
+            all_clickable = d.xpath('//*[@clickable="true"]').all()
+            for c in all_clickable:
+                cb = c.attrib.get("bounds", "")
+                cm = re.match(r"\[(\d+),(\d+)\]\[(\d+),(\d+)\]", cb)
+                if not cm:
+                    continue
+                cy1, cy2 = int(cm.group(2)), int(cm.group(4))
+                cx1, cx2 = int(cm.group(1)), int(cm.group(3))
+                # Row card: y mencakup default badge, lebar > 800
+                if cy1 < default_y < cy2 and (cx2 - cx1) > 800:
+                    cx = (cx1 + cx2) // 2
+                    cy = (cy1 + cy2) // 2
+                    d.click(cx, cy)
+                    time.sleep(0.3)
+                    print(f"[jobstreet]   resume DEFAULT dipilih @({cx},{cy})")
+                    return True
+
+        # Fallback: cari row pertama yang ada .pdf text
+        pdf_nodes = d.xpath('//*[contains(@text,".pdf")]').all()
+        for n in pdf_nodes:
+            b = n.attrib.get("bounds", "")
+            m = re.match(r"\[(\d+),(\d+)\]\[(\d+),(\d+)\]", b)
+            if not m:
+                continue
+            pdf_y = int(m.group(2))
+            if pdf_y < 600:  # skip kalau di area header
+                continue
+            all_clickable = d.xpath('//*[@clickable="true"]').all()
+            for c in all_clickable:
+                cb = c.attrib.get("bounds", "")
+                cm = re.match(r"\[(\d+),(\d+)\]\[(\d+),(\d+)\]", cb)
+                if not cm:
+                    continue
+                cy1, cy2 = int(cm.group(2)), int(cm.group(4))
+                cx1, cx2 = int(cm.group(1)), int(cm.group(3))
+                if cy1 < pdf_y < cy2 and (cx2 - cx1) > 800:
+                    cx = (cx1 + cx2) // 2
+                    cy = (cy1 + cy2) // 2
+                    d.click(cx, cy)
+                    time.sleep(0.3)
+                    print(f"[jobstreet]   resume PDF dipilih @({cx},{cy})")
+                    return True
+    except Exception as e:
+        print(f"[jobstreet] _select_resume error: {e}")
+    print(f"[jobstreet]   WARN: resume tidak terpilih!")
     return False
+
+
+def _verify_resume_selected(d):
+    """
+    Pastikan ada radio button yang terisi di Resumé section.
+    Glints uses selected="true" attribute or visual filled circle.
+    """
+    try:
+        # Cari node selected="true" di area atas form (sebelum Continue)
+        all_nodes = d.xpath('//*[@selected="true"]').all()
+        if all_nodes:
+            return True
+        # Atau cek text "Default" yang punya parent dengan selected indicator (best effort)
+        return False
+    except Exception:
+        return False
 
 
 def _select_cover_letter(d):
@@ -227,22 +285,54 @@ def _select_cover_letter(d):
 
 
 def _step1_documents(d):
-    """Step 1: pilih resume + cover letter (cepat)."""
-    for attempt in range(2):
-        d.swipe(540, 400, 540, 2200, duration=0.04)
-        time.sleep(0.1)
+    """Step 1: WAJIB pilih resume + cover letter sebelum Continue."""
+    # Pastikan tab Application aktif (coord-based)
+    try:
+        if d(text="Job details").exists(timeout=0.4):
+            d.click(171, 378)
+            time.sleep(0.4)
+    except Exception:
+        pass
 
-        _select_resume(d)
+    # Scroll ke atas dulu biar resume section visible
+    d.swipe(540, 400, 540, 2200, duration=0.04)
+    time.sleep(0.15)
+
+    resume_ok = False
+    for attempt in range(3):
+        # WAJIB pilih resume
+        if _select_resume(d):
+            resume_ok = True
+            time.sleep(0.2)
+
+        # Cover letter optional
         _select_cover_letter(d)
+        time.sleep(0.15)
+
+        # Scroll ke bottom cari Continue
+        d.swipe(540, 2000, 540, 700, duration=0.04)
+        time.sleep(0.15)
+
+        if not resume_ok:
+            # Belum dapet resume, scroll up lagi coba lagi
+            d.swipe(540, 400, 540, 2200, duration=0.04)
+            time.sleep(0.15)
+            continue
 
         _tap_text(d, "Continue", timeout=1)
-        time.sleep(0.3)
+        time.sleep(0.4)
 
         if d(textContains="required").exists(timeout=0.5):
             _tap_text(d, "OK", timeout=0.5)
             time.sleep(0.1)
+            # Scroll up coba pilih resume lagi
+            d.swipe(540, 400, 540, 2200, duration=0.04)
+            time.sleep(0.15)
             continue
         break
+
+    if not resume_ok:
+        print(f"[jobstreet]   PERINGATAN: resume mungkin tidak terpilih di Step 1!")
 
 
 def _step4_submit(d):
@@ -379,6 +469,12 @@ def _pick_dropdown_option(question_text, options):
     if any(k in q for k in ["framework", "library", "bahasa pemrograman", "language"]):
         return find("react", "python", "javascript", "typescript") or options[0]
 
+    # Yes/No questions (2 options where one is Yes/Ya): default Yes
+    yes_opt = find("ya", "yes")
+    no_opt  = find("tidak", "no")
+    if yes_opt and no_opt and len(options) <= 4:
+        return yes_opt
+
     # Default: ambil opsi terakhir (biasanya yang paling skilled / lengkap)
     return options[-1] if options else None
 
@@ -490,26 +586,43 @@ def _answer_step2_questions(d):
         except Exception:
             break
 
-        # Read options yang muncul
+        # Read options yang muncul (di sub-page atau dropdown)
         try:
             opt_nodes = d.xpath('//*[@text!=""]').all()
             options = []
+            skip_known = {
+                "Select answer", "Continue", "Back", "Application",
+                "Job details", "Save", "Quick apply", "OK", "Cancel",
+            }
             for o in opt_nodes:
                 txt = o.attrib.get("text", "").strip()
-                ob = o.attrib.get("bounds", "")
-                om = re.match(r"\[(\d+),(\d+)\]\[(\d+),(\d+)\]", ob)
-                if not om:
+                if not txt or len(txt) > 80:
                     continue
-                oy1 = int(om.group(2))
-                # Opsi biasa kecil, exclude judul/tombol
-                if oy1 < sel_y_top + 50:
+                if txt in skip_known:
                     continue
-                if len(txt) > 80:
+                if question and (txt == question or txt in question):
                     continue
-                if txt in ("Select answer", "Continue", "Back", question):
+                # Skip step indicator
+                if re.match(r"^Step\s+\d+\s+of\s+\d+$", txt):
+                    continue
+                # Skip baris status/error
+                if "make a selection" in txt.lower():
+                    continue
+                # Skip question heading panjang (lebih dari 40 char dan ada tanda tanya)
+                if len(txt) > 40 and "?" in txt:
+                    continue
+                # Skip time HH:MM atau HH.MM (status bar atau timestamp)
+                if re.match(r"^\d{1,2}[:.]\d{2}$", txt):
+                    continue
+                # Skip greeting
+                if "good morning" in txt.lower() or "good afternoon" in txt.lower() or "good evening" in txt.lower():
+                    continue
+                # Skip filter node package non-jobstreet (status bar)
+                pkg_attr = o.attrib.get("package", "")
+                if pkg_attr and pkg_attr != JOBSTREET_PACKAGE:
                     continue
                 options.append(txt)
-            options = list(dict.fromkeys(options))[:15]  # dedupe, max 15
+            options = list(dict.fromkeys(options))[:15]
         except Exception:
             options = []
 
@@ -614,6 +727,174 @@ def _tap_refresh(d):
     return False
 
 
+def _switch_tab(d, label):
+    """
+    Switch ke tab di JobStreet feed: 'All' / 'New to you' / 'Recommended'.
+    Return True kalau berhasil tap.
+    """
+    if not _ensure_jobstreet(d):
+        time.sleep(1.5)
+    try:
+        # Cari node text=label DI DALAM JobStreet package (filter)
+        nodes = d.xpath(f'//*[@text="{label}"]').all()
+        for n in nodes:
+            pkg = n.attrib.get("package", "")
+            if pkg and pkg != JOBSTREET_PACKAGE:
+                continue
+            b = n.attrib.get("bounds", "")
+            m = re.match(r"\[(\d+),(\d+)\]\[(\d+),(\d+)\]", b)
+            if not m:
+                continue
+            cy = (int(m.group(2)) + int(m.group(4))) // 2
+            # Tab harus di area atas (y < 800)
+            if cy > 800:
+                continue
+            cx = (int(m.group(1)) + int(m.group(3))) // 2
+            d.click(cx, cy)
+            time.sleep(0.5)
+            return True
+    except Exception:
+        pass
+    return False
+
+
+def _scroll_to_feed_top(d):
+    """Scroll ke atas penuh untuk lihat tab Recommended/All/New to you."""
+    for _ in range(5):
+        d.swipe(540, 400, 540, 2200, duration=0.04)
+        time.sleep(0.08)
+
+
+# Keyword search JobStreet sesuai profile Yoel (expanded)
+JS_SEARCH_KEYWORDS = [
+    "AI Engineer", "Machine Learning Engineer",
+    "Agentic AI", "LLM Engineer", "Prompt Engineer",
+    "Forward Deployed Engineer",
+    "Backend Developer", "Python Developer",
+    "Node JS Developer", "Java Developer",
+    "Full Stack Developer", "Fullstack Engineer",
+    "Frontend Developer", "React Developer",
+    "Vue Developer", "Next JS Developer",
+    "Software Engineer", "Software Developer",
+    "Web Developer",
+    "DevOps Engineer", "Cloud Engineer",
+    "Platform Engineer", "SRE",
+    "Data Engineer", "Data Scientist", "Data Analyst",
+    "IT Support", "IT Specialist", "IT Engineer",
+    "Mobile Developer", "Flutter Developer",
+    "Blockchain Developer", "Smart Contract Developer",
+    "Tech Lead", "Senior Engineer",
+]
+
+
+def _search_js(d, keyword):
+    """
+    Buka search bar JobStreet, ketik keyword, submit ke results page.
+
+    Real flow JS (verified live 2026-05-17):
+      1. Tap top search bar "Continue your job search" -> opens MODAL
+         dengan 2 fields (Describe / Enter suburb) + filters + tombol SEEK.
+      2. Tap "Describe what you're looking for" field -> opens secondary
+         SUGGESTION INPUT page dengan keyboard.
+      3. Type keyword.
+      4. Press ENTER -> returns ke modal, field terisi, tombol jadi "SEEK N Jobs".
+      5. Tap SEEK button -> results page.
+      6. Dismiss "Save this search" banner kalau muncul.
+    """
+    if not _ensure_jobstreet(d):
+        time.sleep(1.5)
+    _go_to_home_tab(d)
+
+    try:
+        # 1. Tap top search bar (y=354 = "Continue your job search")
+        d.click(540, 354)
+        time.sleep(1.0)
+
+        # 2. Tap "Describe what you're looking for" field (modal first input)
+        #    Bounds: [48,354][1032,507], center y=430
+        d.click(540, 430)
+        time.sleep(1.0)
+
+        # 3. Clear existing text + type keyword di suggestion page
+        try:
+            adb_utils.adb(DEVICE_SERIAL, "shell", "input", "keyevent", "KEYCODE_CTRL_A")
+            adb_utils.adb(DEVICE_SERIAL, "shell", "input", "keyevent", "KEYCODE_DEL")
+        except Exception:
+            pass
+        time.sleep(0.2)
+        safe = keyword.replace(" ", "%s")
+        adb_utils.adb(DEVICE_SERIAL, "shell", "input", "text", safe)
+        time.sleep(0.4)
+
+        # 4. Press ENTER -> back to modal dengan field terisi
+        adb_utils.adb(DEVICE_SERIAL, "shell", "input", "keyevent", "KEYCODE_ENTER")
+        time.sleep(1.5)
+
+        # 5. Tap SEEK button. Text dinamis: "SEEK N Jobs" / "SEEK".
+        clicked = False
+        for sel_kwargs in (
+            {"textStartsWith": "SEEK "},
+            {"text": "SEEK"},
+        ):
+            try:
+                el = d(**sel_kwargs)
+                if el.exists(timeout=1.5):
+                    el.click()
+                    clicked = True
+                    break
+            except Exception:
+                pass
+        if not clicked:
+            # Fallback koordinat: pink SEEK button area [48,1488][1032,1632]
+            d.click(540, 1560)
+        time.sleep(2.5)
+
+        # 6. Dismiss "Save this search" banner di kanan bawah results
+        #    (cuma muncul untuk keyword baru). Klik X-nya kalau ada,
+        #    atau just leave it — gak interfere card tap.
+        try:
+            for label in ["Not now", "Dismiss", "Maybe later"]:
+                btn = d(text=label)
+                if btn.exists(timeout=0.4):
+                    btn.click()
+                    time.sleep(0.3)
+                    break
+        except Exception:
+            pass
+
+        return True
+    except Exception as e:
+        print(f"[jobstreet] search error: {e}")
+    return False
+
+
+def _ensure_jobstreet(d):
+    """Pastikan device di app JobStreet. Relaunch kalau tidak."""
+    try:
+        pkg = d.app_current().get("package", "")
+    except Exception:
+        pkg = ""
+    if pkg != JOBSTREET_PACKAGE:
+        _launch()
+        time.sleep(0.5)
+        return False  # relaunched
+    return True
+
+
+def _go_to_home_tab(d):
+    """Klik Home tab di bottom nav (koordinat tetap, bukan teks)."""
+    _ensure_jobstreet(d)
+    # Bottom nav Home di koordinat tetap berdasarkan UI dump
+    # Home center sekitar (144, 2316) berdasarkan bounds [98,2296][190,2336]
+    try:
+        d.click(144, 2316)
+        time.sleep(0.5)
+        return True
+    except Exception:
+        pass
+    return False
+
+
 def _complete_apply(d):
     """
     Selesaikan 4 step Quick Apply JobStreet.
@@ -631,6 +912,15 @@ def _complete_apply(d):
         except Exception:
             pass
         return False
+
+    # Pastikan tab Application aktif (bukan Job details) - tap coord (kiri atas tab)
+    try:
+        if d(text="Job details").exists(timeout=0.4):
+            # Application tab di bounds [48,350][295,406], center (171, 378)
+            d.click(171, 378)
+            time.sleep(0.4)
+    except Exception:
+        pass
 
     # Step 1
     if d(textContains="Choose documents").exists(timeout=2):
@@ -692,113 +982,138 @@ def run_batch(d, limit=BATCH_SIZE):
 
     applied = 0
     skipped = 0
-    empty_streak = 0
 
-    for iter_n in range(60):
+    # Sumber card: pertama tabs, lalu search keyword
+    sources = [("tab", t) for t in ["All", "New to you", "Recommended"]]
+    sources += [("search", kw) for kw in JS_SEARCH_KEYWORDS]
+
+    for src_type, src_label in sources:
         if applied >= limit:
             break
 
-        cards = _get_cards(d)
-        new   = [c for c in cards if c["bounds_key"] not in _seen_jobstreet]
-
-        if not new:
-            empty_streak += 1
-            # Setiap 5x empty scroll, tap Refresh untuk pull cards baru
-            if empty_streak % 5 == 0:
-                _tap_refresh(d)
-            d.swipe(540, 2200, 540, 200, duration=0.04)
-            time.sleep(0.1)
-            if empty_streak >= 15:
-                # Sudah scroll banyak, masih tidak ada -> stop
-                break
-            continue
+        if src_type == "tab":
+            _go_to_home_tab(d)
+            _scroll_to_feed_top(d)
+            switched = _switch_tab(d, src_label)
+            if switched:
+                print(f"[jobstreet] tab -> {src_label}")
+        else:
+            _go_to_home_tab(d)
+            _scroll_to_feed_top(d)
+            if _search_js(d, src_label):
+                print(f"[jobstreet] search -> {src_label}")
+            else:
+                continue
         empty_streak = 0
 
-        for card in new:
+        for iter_n in range(50):
             if applied >= limit:
                 break
-            _seen_jobstreet.add(card["bounds_key"])
 
-            position = card["position"]
-            company  = card["company"]
-            salary   = card["salary"]
-            notes    = card["notes"]
+            cards = _get_cards(d)
+            new   = [c for c in cards if c["bounds_key"] not in _seen_jobstreet]
 
-            if not position:
-                continue
+            if iter_n == 0 or new:
+                print(f"[jobstreet]   {len(cards)} card terdeteksi, {len(new)} baru")
 
-            jid = f"JS|{company}|{position}"
-            if state_manager.is_applied(jid):
-                skipped += 1
+            if not new:
+                empty_streak += 1
+                if empty_streak % 5 == 0:
+                    _tap_refresh(d)
+                d.swipe(540, 2200, 540, 200, duration=0.04)
+                time.sleep(0.1)
+                if empty_streak >= 12:
+                    # Pindah ke tab berikutnya
+                    break
                 continue
-            if _blacklisted(company):
-                state_manager.mark_applied(jid)
-                skipped += 1
-                continue
-            if not _ok_salary(salary):
-                state_manager.mark_applied(jid)
-                skipped += 1
-                continue
-            if not _fuzzy(position):
-                state_manager.mark_applied(jid)
-                skipped += 1
-                continue
-            if _foreign_location(notes) or _foreign_location(company) or _foreign_location(position):
-                print(f"[jobstreet] skip (lokasi asing) {position} | {notes[:80]}")
-                state_manager.mark_applied(jid)
-                skipped += 1
-                continue
+            empty_streak = 0
 
-            try:
-                card["node"].click()
-                time.sleep(T_LOAD)
-                _dismiss(d)
+            for card in new:
+                if applied >= limit:
+                    break
+                _seen_jobstreet.add(card["bounds_key"])
 
-                # Ambil deskripsi dari halaman detail
-                description = _extract_detail_desc(d)
+                position = card["position"]
+                company  = card["company"]
+                salary   = card["salary"]
+                notes    = card["notes"]
 
-                if not _tap_text(d, "Quick apply", timeout=2):
-                    d.press("back")
+                if not position:
                     continue
-                time.sleep(T_ANIM + 0.3)
 
-                ok = _complete_apply(d)
-                smin, smax = _parse_salary_range(salary)
-
-                # Hanya mark applied kalau benar-benar berhasil submit
-                if ok:
+                jid = f"JS|{company}|{position}"
+                if state_manager.is_applied(jid):
+                    skipped += 1
+                    continue
+                if _blacklisted(company):
                     state_manager.mark_applied(jid)
-                if ok:
-                    report.write_application(
-                        platform="JobStreet",
-                        company=company or "tidak diketahui",
-                        position=position,
-                        salary_min=smin or None,
-                        salary_max=smax or None,
-                        notes=notes,
-                        description=description,
-                    )
-                    applied += 1
-                    print(f"[jobstreet] ({applied}/{limit}) {company} | {position} | {salary}")
-                else:
-                    print(f"[jobstreet] form tidak selesai: {position}")
+                    skipped += 1
+                    continue
+                if not _ok_salary(salary):
+                    state_manager.mark_applied(jid)
+                    skipped += 1
+                    continue
+                if not _fuzzy(position):
+                    state_manager.mark_applied(jid)
+                    skipped += 1
+                    continue
+                if _foreign_location(notes) or _foreign_location(company) or _foreign_location(position):
+                    print(f"[jobstreet] skip (lokasi asing) {position} | {notes[:80]}")
+                    state_manager.mark_applied(jid)
+                    skipped += 1
+                    continue
 
-                # Tutup halaman Success / form: tap X (kiri atas) lalu back ke feed
-                _close_to_feed(d)
-
-            except Exception as e:
-                print(f"[jobstreet] error: {e}")
+                print(f"[jobstreet]   APPLY {company} | {position} | {salary}")
                 try:
-                    d.press("back")
-                    if d.app_current().get("package", "") != JOBSTREET_PACKAGE:
-                        _launch()
-                        _dismiss(d)
-                except Exception:
-                    pass
-                time.sleep(T_TAP)
+                    card["node"].click()
+                    time.sleep(T_LOAD)
+                    _dismiss(d)
 
-        d.swipe(540, 2200, 540, 200, duration=0.04)
-        time.sleep(T_TAP)
+                    # Ambil deskripsi dari halaman detail
+                    description = _extract_detail_desc(d)
+
+                    if not _tap_text(d, "Quick apply", timeout=2):
+                        d.press("back")
+                        continue
+                    time.sleep(T_ANIM + 0.3)
+
+                    ok = _complete_apply(d)
+                    smin, smax = _parse_salary_range(salary)
+
+                    # Hanya mark applied kalau benar-benar berhasil submit
+                    if ok:
+                        state_manager.mark_applied(jid)
+                        report.write_application(
+                            platform="JobStreet",
+                            company=company or "tidak diketahui",
+                            position=position,
+                            salary_min=smin or None,
+                            salary_max=smax or None,
+                            notes=notes,
+                            description=description,
+                        )
+                        applied += 1
+                        print(f"[jobstreet] ({applied}/{limit}) {company} | {position} | {salary}")
+                    else:
+                        print(f"[jobstreet] form tidak selesai: {position}")
+
+                    # Tutup halaman Success / form: tap X (kiri atas) lalu back ke feed
+                    _close_to_feed(d)
+
+                except Exception as e:
+                    print(f"[jobstreet] error: {e}")
+                    try:
+                        d.press("back")
+                        if d.app_current().get("package", "") != JOBSTREET_PACKAGE:
+                            _launch()
+                            _dismiss(d)
+                    except Exception:
+                        pass
+                    time.sleep(T_TAP)
+
+            # Scroll untuk load card berikutnya di feed yang sama
+            d.swipe(540, 2200, 540, 200, duration=0.04)
+            time.sleep(T_TAP)
 
     print(f"[jobstreet] Batch selesai: {applied} dilamar, {skipped} diskip")
     return applied

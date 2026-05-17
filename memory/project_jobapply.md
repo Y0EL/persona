@@ -49,7 +49,3 @@ FILE PENTING:
 - C:\Users\Engineer02\Desktop\persona\steps\jobstreet\flow.md - dokumentasi flow JobStreet
 - C:\Users\Engineer02\Desktop\persona\automation\ - script automation
 - C:\Users\Engineer02\Desktop\persona\Lamaran\ - folder laporan harian
-
-suka-ora-v1-
-
-PLAT NUMBER=c36797b4b756e7e9f53634f72f6bf9a543b2048a179c6f9f1dc613a91d110b2b

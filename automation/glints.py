@@ -13,24 +13,46 @@ from config import (
 # Keywords yang akan di-search satu per satu di Glints.
 # Setiap keyword bakal di-type ke search bar -> hasilkan cards yang di-filter via FUZZY_KEYWORDS.
 SEARCH_KEYWORDS = [
-    "AI Engineer",
-    "Machine Learning Engineer",
-    "Agentic AI",
-    "LLM Engineer",
-    "Data Scientist",
+    # Core AI / ML
+    "AI Engineer", "AI Developer", "AI Specialist",
+    "Machine Learning Engineer", "ML Engineer",
+    "Agentic AI", "LLM Engineer", "Prompt Engineer",
+    "Applied AI Engineer", "MLOps Engineer",
+    "Forward Deployed Engineer", "Solutions Engineer",
+    # Data — Data Engineer only (pipeline/backend). NO Data Scientist/Analyst/BI.
     "Data Engineer",
-    "Frontend Developer",
-    "Backend Developer",
-    "Full Stack Developer",
-    "Software Engineer",
-    "Web Developer",
-    "Python Developer",
-    "Next JS Developer",
-    "DevOps Engineer",
-    "Cloud Engineer",
-    "IT Support",
-    "IT Specialist",
-    "Blockchain Developer",
+    # Frontend
+    "Frontend Developer", "Front End Developer",
+    "React Developer", "Vue Developer", "Angular Developer",
+    "Next JS Developer", "UI Developer", "UI Engineer",
+    # Backend
+    "Backend Developer", "Back End Developer",
+    "Python Developer", "Node JS Developer",
+    "Django Developer", "FastAPI Developer",
+    "Java Developer", "Golang Developer",
+    # Fullstack
+    "Full Stack Developer", "Fullstack Engineer",
+    "Web Developer", "Web Engineer",
+    # Software / Generic
+    "Software Engineer", "Software Developer",
+    "Software Architect", "Tech Lead",
+    "Senior Engineer", "Junior Engineer",
+    # DevOps / Cloud / Infra
+    "DevOps Engineer", "Cloud Engineer",
+    "Platform Engineer", "Site Reliability Engineer",
+    "Infrastructure Engineer", "AWS Engineer",
+    # IT
+    "IT Support", "IT Specialist", "IT Engineer",
+    "System Engineer", "System Analyst",
+    "Network Engineer",
+    # Mobile
+    "Mobile Developer", "React Native Developer",
+    "Android Developer", "Flutter Developer",
+    # Blockchain / Web3 (CV: VeChain, Solidity)
+    "Blockchain Developer", "Smart Contract Developer",
+    "Web3 Developer", "Solidity Developer",
+    # QA / Misc tech
+    "QA Engineer", "Automation Engineer",
 ]
 
 # Koordinat dari UI dump (tidak berubah karena layar 1080x2436)
@@ -39,6 +61,25 @@ SEARCH_ICON_Y = 210
 
 _seen: set = set()
 _keyword_idx = 0      # track keyword mana yang sedang diproses
+
+# Skip reason tracking (per session) untuk retrospective AI.
+SKIP_COUNTERS: dict = {}
+SAMPLE_SKIPPED: list = []  # list of (company, position, reason), max 30
+
+
+def _track_skip(company, position, reason):
+    SKIP_COUNTERS[reason] = SKIP_COUNTERS.get(reason, 0) + 1
+    if len(SAMPLE_SKIPPED) < 30:
+        SAMPLE_SKIPPED.append((company or "?", position or "?", reason))
+
+
+def get_session_stats():
+    return dict(SKIP_COUNTERS), list(SAMPLE_SKIPPED)
+
+
+def reset_session_stats():
+    SKIP_COUNTERS.clear()
+    SAMPLE_SKIPPED.clear()
 
 
 def _launch_fresh():
@@ -302,6 +343,54 @@ def _extract_detail_texts(d):
             if len(cd) > 60 and "\n" in cd:
                 texts.append(cd[:200])
         return " | ".join(texts[:2])[:300]
+    except Exception:
+        return ""
+
+
+def _extract_full_job_context(d):
+    """
+    Ambil SEMUA teks relevan dari halaman job detail Glints — bukan cuma 2 paragraph
+    terbesar seperti _extract_detail_texts. Output: raw multiline text untuk dikirim
+    ke ai_helper.summarize_job.
+    """
+    try:
+        nodes = d.xpath('//*[@content-desc!=""]').all()
+        seen = set()
+        chunks = []
+        for n in nodes:
+            cd = n.attrib.get("content-desc", "").strip()
+            if not cd or len(cd) < 8:
+                continue
+            # Skip tombol / navigasi umum yang muncul di semua halaman
+            low = cd.lower()
+            if any(skip in low for skip in [
+                "tutup", "kembali", "navigasi", "tab ", "telusuri lebih",
+                "chat untuk melamar", "lamar tanpa cv", "simpan", "bagikan",
+                "lihat lebih lengkap", "lihat detail",
+            ]):
+                continue
+            if cd in seen:
+                continue
+            seen.add(cd)
+            chunks.append(cd[:500])
+            if len(chunks) >= 25:
+                break
+
+        # Tambahkan juga text node (bukan content-desc) untuk Glints React Native
+        text_nodes = d.xpath('//*[@text!=""]').all()
+        for n in text_nodes:
+            t = n.attrib.get("text", "").strip()
+            if not t or len(t) < 8 or t in seen:
+                continue
+            low = t.lower()
+            if any(skip in low for skip in ["tutup", "kembali", "selanjutnya"]):
+                continue
+            seen.add(t)
+            chunks.append(t[:300])
+            if len(chunks) >= 40:
+                break
+
+        return "\n".join(chunks)
     except Exception:
         return ""
 
@@ -1118,21 +1207,25 @@ def run_batch(d, limit=BATCH_SIZE):
                 jid = f"G|{company}|{position}"
                 if state_manager.is_applied(jid):
                     print(f"[glints]   skip (state) {company} | {position}")
+                    _track_skip(company, position, "state")
                     skipped += 1
                     continue
                 if _blacklisted(company):
                     print(f"[glints]   skip (blacklist) {company}")
                     state_manager.mark_applied(jid)
+                    _track_skip(company, position, "blacklist")
                     skipped += 1
                     continue
                 if not _ok_salary(salary):
                     print(f"[glints]   skip (gaji <{MIN_SALARY}) {position} | {salary}")
                     state_manager.mark_applied(jid)
+                    _track_skip(company, position, f"gaji<{MIN_SALARY}")
                     skipped += 1
                     continue
                 if not _fuzzy(position):
                     print(f"[glints]   skip (posisi) {position}")
                     state_manager.mark_applied(jid)
+                    _track_skip(company, position, "fuzzy-mismatch")
                     skipped += 1
                     continue
                 print(f"[glints]   APPLY {company} | {position} | {salary}")
@@ -1143,6 +1236,7 @@ def run_batch(d, limit=BATCH_SIZE):
                     _dismiss(d)
 
                     description = _extract_detail_texts(d)
+                    full_context = _extract_full_job_context(d)
 
                     apply_result = _tap_apply_button(d)
                     time.sleep(T_ANIM + 0.2)
@@ -1174,6 +1268,13 @@ def run_batch(d, limit=BATCH_SIZE):
                             l for l in desc.split("\n")
                             if l.strip() and len(l.strip()) > 8
                         )[:200]
+                        ai_summary = ""
+                        try:
+                            ai_summary = ai_helper.summarize_job(
+                                full_context, company or "tidak diketahui", position
+                            )
+                        except Exception as e:
+                            print(f"[glints] AI summary gagal: {e}")
                         report.write_application(
                             platform="Glints",
                             company=company or "tidak diketahui",
@@ -1182,6 +1283,7 @@ def run_batch(d, limit=BATCH_SIZE):
                             salary_max=smax or None,
                             notes=notes,
                             description=description,
+                            ai_summary=ai_summary,
                         )
                         applied += 1
                         print(f"[glints] ({applied}/{limit}) {company} | {position} | {salary}")

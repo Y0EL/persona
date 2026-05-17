@@ -78,12 +78,10 @@ def _split_description(desc):
     return items[:8]
 
 
-def _build_entry(idx, platform, company, position, salary_min, salary_max, notes, description):
+def _build_entry(idx, platform, company, position, salary_min, salary_max, notes, description, ai_summary=""):
     perusahaan = _clean(company) or "tidak diketahui"
     posisi = _clean(position)
     gaji = _format_salary(salary_min, salary_max)
-    desc_lines = _split_description(description)
-    note_lines = _split_notes(notes)
 
     lines = [
         "",
@@ -98,18 +96,29 @@ def _build_entry(idx, platform, company, position, salary_min, salary_max, notes
         f"| Waktu Lamar | {datetime.now().strftime('%H:%M')} |",
         "",
     ]
-    if desc_lines:
-        lines.append("**Deskripsi Pekerjaan**")
+
+    # Kalau ada AI summary, prefer pakai itu (lebih kontekstual + kultur perusahaan).
+    if ai_summary and len(ai_summary) > 80:
+        clean_ai = _clean(ai_summary)
+        lines.append(clean_ai)
         lines.append("")
-        for d in desc_lines:
-            lines.append(f"> {d}")
-        lines.append("")
-    if note_lines:
-        lines.append("**Catatan**")
-        lines.append("")
-        for n in note_lines:
-            lines.append(f"- {n}")
-        lines.append("")
+    else:
+        # Fallback ke format lama: bullet description + catatan.
+        desc_lines = _split_description(description)
+        note_lines = _split_notes(notes)
+        if desc_lines:
+            lines.append("**Deskripsi Pekerjaan**")
+            lines.append("")
+            for d in desc_lines:
+                lines.append(f"> {d}")
+            lines.append("")
+        if note_lines:
+            lines.append("**Catatan**")
+            lines.append("")
+            for n in note_lines:
+                lines.append(f"- {n}")
+            lines.append("")
+
     lines.append("---")
     return "\n".join(lines) + "\n"
 
@@ -154,7 +163,42 @@ def _update_total_in_header(fpath, new_total):
         pass
 
 
-def write_application(platform, company, position, salary_min, salary_max, notes, description=""):
+def write_platform_done(platform, applied_count, retrospective_md):
+    """
+    Append section penutup untuk satu platform yang selesai.
+    Format:
+        ## [SELESAI] Platform <X> | <N> lowongan
+        <AI retrospective markdown>
+        ---
+    """
+    os.makedirs(REPORT_DIR, exist_ok=True)
+    fname = _today_filename()
+    fpath = os.path.join(REPORT_DIR, fname)
+
+    body = (retrospective_md or "").strip()
+    if not body:
+        body = (
+            f"_Tidak ada retrospective AI untuk {platform} kali ini._\n\n"
+            f"Total lowongan ter-apply hari ini di {platform}: {applied_count}."
+        )
+
+    block = (
+        "\n"
+        f"## [SELESAI] Platform {_clean(platform)} | {applied_count} lowongan ter-apply hari ini\n"
+        "\n"
+        f"_Sesi {_clean(platform)} ditutup pada {datetime.now().strftime('%H:%M')}._\n"
+        "\n"
+        f"{body}\n"
+        "\n"
+        "---\n"
+    )
+
+    with open(fpath, "a", encoding="utf-8") as f:
+        f.write(block)
+    print(f"[report] {platform} SELESAI block written ({applied_count} apply)")
+
+
+def write_application(platform, company, position, salary_min, salary_max, notes, description="", ai_summary=""):
     os.makedirs(REPORT_DIR, exist_ok=True)
     fname = _today_filename()
     fpath = os.path.join(REPORT_DIR, fname)
@@ -164,7 +208,7 @@ def write_application(platform, company, position, salary_min, salary_max, notes
 
     entry = _build_entry(
         next_idx, platform, company, position,
-        salary_min, salary_max, notes, description,
+        salary_min, salary_max, notes, description, ai_summary,
     )
 
     is_new = not os.path.exists(fpath) or os.path.getsize(fpath) == 0

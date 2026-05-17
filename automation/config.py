@@ -32,8 +32,8 @@ FUZZY_KEYWORDS = [
     "prompt engineer", "rag ", "vector",
     "computer vision", "mlops",
     "generative ai", "gen ai", "genai",
-    # Data
-    "data scientist", "data science", "data engineer", "data analyst",
+    # Data Engineering only (pipelines/backend) — NO data scientist/analyst/BI (off-fit)
+    "data engineer",
     # Frontend
     "frontend", "front end", "front-end", "react", "reactjs", "next js",
     "nextjs", "next.js", "vue", "vuejs", "angular", "typescript",
@@ -48,7 +48,7 @@ FUZZY_KEYWORDS = [
     "web engineer",
     # IT
     "it support", "it specialist", "it engineer", "tech support",
-    "helpdesk", "help desk", "system analyst", "system engineer",
+    "helpdesk", "help desk", "system engineer",
     # DevOps / Cloud / Infra
     "devops", "cloud engineer", "platform engineer", "site reliability",
     "sre", "infrastructure engineer",
@@ -57,8 +57,6 @@ FUZZY_KEYWORDS = [
     # Mobile
     "mobile developer", "android developer", "ios developer",
     "react native",
-    # BI / Analytics
-    "business intelligence", "bi developer", "analytics engineer",
 ]
 
 MIN_SALARY = 8_000_000

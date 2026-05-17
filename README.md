@@ -104,16 +104,54 @@ python -m uiautomator2 init
 # 4. (Opsional) set API key OpenRouter buat AI text answer
 $env:OPENROUTER_API_KEY = "sk-or-v1-..."
 
-# 5. Jalanin full automation, bergantian Glints terus JobStreet
-python automation/main.py
+# 5. Jalanin full automation, sequential per platform sampai cap 20 atau zero-streak
+#    Otomatis spawn live dashboard di http://127.0.0.1:8000
+python automation/main.py all
 
 # 6. Atau cuma satu platform aja
-python automation/main.py jobstreet
 python automation/main.py glints
+python automation/main.py jobstreet
+python automation/main.py linkedin
+python automation/main.py indeed
 
-# 7. Replay laporan hari ini di terminal, keren abis
+# 7. Jalankan tanpa dashboard (kalau perlu silent total)
+python automation/main.py all --no-dashboard
+
+# 8. Replay laporan hari ini di terminal
 python automation/visualizer.py
 python automation/visualizer.py --fast
+```
+
+<br/>
+
+## Live Dashboard
+
+Tiap kali lo run `python automation/main.py`, dashboard FastAPI auto-spawn di background (no CMD window). Buka di browser:
+
+```
+http://127.0.0.1:8000
+```
+
+Yang lo lihat (editorial-style, bukan generic admin):
+
+- **Cover spread**: portrait Yoel + headline + 3 metrik utama (today / cumulative / on-the-floor)
+- **§01 Instruments**: 4 vertical gauge cards per platform dengan FINIS stamp kalau tamat
+- **§02 Now Playing**: company + position yang lagi di-apply, last action, session uptime
+- **§03 The Ledger**: semua lamaran hari ini, click expand untuk render AI summary markdown (kultur perusahaan, role fit)
+- **§04 Essays**: retrospective AI per platform yang udah tamat (kenapa selesai + improvement untuk Yoel)
+- **§05 Wire**: live log stream via SSE, editorial column dengan color-coded entries
+
+Jalanin standalone (tanpa main.py):
+```powershell
+python automation/dashboard_server.py
+# default port 8000; override via $env:DASHBOARD_PORT
+```
+
+Stop dashboard:
+```powershell
+Get-Process python | Where-Object { $_.CommandLine -like '*dashboard_server*' } | Stop-Process -Force
+# atau matiin semua python (otomatis bunuh dashboard juga)
+Get-Process python | Stop-Process -Force
 ```
 
 <br/>
