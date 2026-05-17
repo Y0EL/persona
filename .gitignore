@@ -10,3 +10,10 @@ __pycache__/
 .claude
 .vscode
 .idea/
+
+# README dashboard screenshots — track these despite *.png exclusion above
+!automation/dashboard_static/d1.png
+!automation/dashboard_static/d2.png
+!automation/dashboard_static/d3.png
+!automation/dashboard_static/d4.png
+!automation/assets/logo.png
