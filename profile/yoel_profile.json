@@ -1,0 +1,97 @@
+{
+  "nama": "Yoel Andreas Manoppo",
+  "email": "yoelandreasmanoppo@gmail.com",
+  "telepon": "+62 899 224 6000",
+  "lokasi": "Jakarta, Indonesia",
+  "github": "github.com/Y0EL",
+  "judul_profil": "AI Forward Deployed Engineer | Agentic AI Architecture | UI Specialist",
+
+  "ringkasan": "AI Forward Deployed Engineer pada tim inti 4 orang yang membangun multi-agent AI skala nasional untuk operasi intelijen pemerintah Indonesia. Spesialis dalam agentic architecture, LangGraph state machines, multi-tier search pipelines, full observability stacks, dan Vue 3 tactical frontends. Rekam jejak mencakup bidang pertahanan, blockchain, eCommerce, dan digital agency.",
+
+  "pengalaman_tahun": 3,
+  "pengalaman_label": "3 tahun",
+
+  "pengalaman_kerja": [
+    {
+      "posisi": "AI Forward Deployed Engineer / UI Specialist",
+      "perusahaan": "PT. GSP",
+      "periode": "Mei 2025 - Sekarang",
+      "bidang": "Government AI Infrastructure, Agentic Systems, Frontend Engineering"
+    },
+    {
+      "posisi": "Software Engineer",
+      "perusahaan": "PT. Decision Tree Indonesia",
+      "periode": "Desember 2025 - Sekarang",
+      "bidang": "Healthcare, eCommerce, Sales, Product"
+    },
+    {
+      "posisi": "Lead dApp Developer (CTO)",
+      "perusahaan": "VeChain Ecosystem",
+      "periode": "Januari 2024 - Februari 2026",
+      "bidang": "Blockchain, AI, Environmental, ESG"
+    },
+    {
+      "posisi": "AI Specialist",
+      "perusahaan": "Zando Agency",
+      "periode": "Mei 2022 - Desember 2024",
+      "bidang": "Digital Marketing, Supply Chain, Social Media"
+    }
+  ],
+
+  "keahlian": {
+    "AI_dan_Orchestration": ["LangGraph", "LangChain", "Ollama", "OpenAI", "Groq", "Whisper", "IBM Granite", "NLLB", "GPT-4o"],
+    "Backend": ["Python", "FastAPI", "PostgreSQL", "Redis", "Docker", "Playwright", "Crawl4AI", "Node.js", "Django", "SQLAlchemy"],
+    "Frontend": ["Vue 3", "TypeScript", "React", "Next.js", "TailwindCSS", "MapLibre GL", "Apache ECharts", "Vue Flow"],
+    "Observability": ["Prometheus", "Grafana", "Langfuse", "ChromaDB", "FlareSolverr", "OpenSERP", "Structlog"],
+    "Blockchain": ["VeChain", "Solidity", "Hardhat", "Web3"],
+    "Infrastructure": ["CUDA 12.x", "AWS", "Docker", "Ubuntu", "OSINT", "OSM"]
+  },
+
+  "pendidikan": [
+    {
+      "institusi": "University of the People",
+      "gelar": "B.Sc. Business Administration"
+    },
+    {
+      "institusi": "Harvard CS50 Series",
+      "gelar": "Computer Science Fundamentals"
+    },
+    {
+      "institusi": "EFSET",
+      "gelar": "C2 English Certificate"
+    }
+  ],
+
+  "bahasa": ["Bahasa Indonesia", "Inggris", "Mandarin"],
+
+  "ekspektasi_gaji": {
+    "minimum": 8000000,
+    "ideal": 12000000,
+    "maksimum": 20000000,
+    "label": "8 juta hingga 15 juta per bulan"
+  },
+
+  "jawaban_standar": {
+    "pengalaman_tahun": "3 tahun",
+    "tingkat_keahlian_software": "Sangat Mahir",
+    "tingkat_keahlian_umum": "Mahir",
+    "pendidikan_terakhir": "S1",
+    "bahasa_dikuasai": ["Bahasa Indonesia", "Inggris"],
+    "tipe_pekerjaan_disukai": ["Full Time", "Hybrid", "Remote"],
+    "gaji_harapan": "10000000",
+    "motivasi_melamar": "Saya tertarik bergabung karena posisi ini sesuai dengan keahlian saya di bidang AI engineering dan pengembangan software. Saya memiliki pengalaman membangun sistem agentic AI skala produksi dan ingin berkontribusi lebih jauh.",
+    "kelebihan": "Kemampuan membangun sistem AI kompleks dari nol, pengalaman lintas stack dari backend hingga frontend, dan rekam jejak dalam proyek skala nasional.",
+    "kelemahan": "Saya terkadang terlalu fokus pada kualitas teknis sehingga butuh waktu lebih untuk delivery, namun saya selalu berkomunikasi dengan tim agar tetap on track.",
+    "ketersediaan": "Segera",
+    "apakah_berpengalaman_di_bidang": "Ya",
+    "apakah_bisa_bekerja_dalam_tim": "Ya",
+    "apakah_punya_laptop": "Ya"
+  },
+
+  "kata_kunci_posisi_target": [
+    "AI Engineer", "Machine Learning Engineer", "Data Scientist", "LLM Engineer",
+    "Agentic AI", "Frontend Developer", "Full Stack Developer", "Software Engineer",
+    "Backend Developer", "Vue Developer", "React Developer", "Python Developer",
+    "IT Specialist", "Data Engineer", "MLOps", "DevOps", "Cloud Engineer"
+  ]
+}
