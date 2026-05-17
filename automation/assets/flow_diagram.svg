@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 1380" width="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <radialGradient id="bgGrad" cx="50%" cy="0%" r="100%">
+      <stop offset="0" stop-color="#1A1714"/>
+      <stop offset="1" stop-color="#0B0A08"/>
+    </radialGradient>
+    <filter id="grainBg">
+      <feTurbulence type="fractalNoise" baseFrequency="1.0" numOctaves="2" seed="5"/>
+      <feColorMatrix values="0 0 0 0 0.93  0 0 0 0 0.91  0 0 0 0 0.85  0 0 0 0.035 0"/>
+      <feComposite in2="SourceGraphic" operator="in"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 12 10" refX="11" refY="5" markerWidth="9" markerHeight="9" orient="auto">
+      <path d="M0,0 L12,5 L0,10 z" fill="#C4B7A1"/>
+    </marker>
+    <marker id="arrowRed" viewBox="0 0 12 10" refX="11" refY="5" markerWidth="9" markerHeight="9" orient="auto">
+      <path d="M0,0 L12,5 L0,10 z" fill="#E2401C"/>
+    </marker>
+  </defs>
+
+  <!-- background -->
+  <rect width="1400" height="1380" fill="url(#bgGrad)"/>
+  <rect width="1400" height="1380" fill="url(#grainBg)" opacity="0.6"/>
+
+  <!-- title row -->
+  <text x="700" y="60" text-anchor="middle" font-family="Times New Roman, serif" font-size="13" letter-spacing="6" fill="#E2401C">
+    § DIAGRAM ALIR OPERATOR
+  </text>
+  <text x="700" y="115" text-anchor="middle" font-family="Times New Roman, serif" font-style="italic" font-size="48" fill="#EDE7DA">
+    How the agent dispatches itself.
+  </text>
+  <line x1="450" y1="150" x2="950" y2="150" stroke="#7B7466" stroke-width="0.6" opacity="0.4"/>
+
+  <!-- BOX STYLE template:
+       fill: #181614 (graphite)
+       stroke: #C4B7A1 opacity 0.3 (sand hairline)
+       rx: 16
+       width: 280, height: 96
+       text: Times New Roman serif, paper #EDE7DA
+  -->
+
+  <!-- ───────────── ROW 1 ───────────── -->
+  <!-- ENTRY POINT -->
+  <g transform="translate(550, 200)">
+    <rect width="300" height="100" rx="18" fill="#181614" stroke="#E2401C" stroke-width="1.5"/>
+    <text x="150" y="42" text-anchor="middle" font-family="Times New Roman, serif" font-size="11" letter-spacing="4" fill="#E2401C">
+      ENTRY POINT
+    </text>
+    <text x="150" y="76" text-anchor="middle" font-family="Times New Roman, serif" font-style="italic" font-size="26" fill="#EDE7DA">
+      python main.py all
+    </text>
+  </g>
+
+  <!-- arrow down (split) -->
+  <path d="M 700,300 L 700,360" stroke="#C4B7A1" stroke-width="1" fill="none" opacity="0.5"/>
+  <path d="M 700,360 L 320,360 L 320,400" stroke="#C4B7A1" stroke-width="1" fill="none" opacity="0.5" marker-end="url(#arrow)"/>
+  <path d="M 700,360 L 1080,360 L 1080,400" stroke="#C4B7A1" stroke-width="1" fill="none" opacity="0.5" marker-end="url(#arrow)"/>
+
+  <!-- ───────────── ROW 2: two parallel ───────────── -->
+  <!-- DASHBOARD spawn -->
+  <g transform="translate(180, 400)">
+    <rect width="280" height="100" rx="18" fill="#181614" stroke="#7B7466" stroke-width="1" stroke-dasharray="4 3"/>
+    <text x="140" y="38" text-anchor="middle" font-family="Times New Roman, serif" font-size="10" letter-spacing="4" fill="#7B7466">
+      SIDE THREAD
+    </text>
+    <text x="140" y="65" text-anchor="middle" font-family="Times New Roman, serif" font-style="italic" font-size="20" fill="#EDE7DA">
+      dashboard_server.py
+    </text>
+    <text x="140" y="86" text-anchor="middle" font-family="Times New Roman, serif" font-size="12" letter-spacing="2" fill="#C4B7A1">
+      port 8000 · CREATE_NO_WINDOW
+    </text>
+  </g>
+
+  <!-- SEQUENTIAL QUEUE -->
+  <g transform="translate(940, 400)">
+    <rect width="280" height="100" rx="18" fill="#181614" stroke="#C4B7A1" stroke-width="1"/>
+    <text x="140" y="38" text-anchor="middle" font-family="Times New Roman, serif" font-size="10" letter-spacing="4" fill="#C4B7A1">
+      ORCHESTRATOR
+    </text>
+    <text x="140" y="66" text-anchor="middle" font-family="Times New Roman, serif" font-style="italic" font-size="22" fill="#EDE7DA">
+      Sequential Queue
+    </text>
+    <text x="140" y="88" text-anchor="middle" font-family="Times New Roman, serif" font-size="12" letter-spacing="2" fill="#7B7466">
+      one platform at a time
+    </text>
+  </g>
+
+  <!-- arrow down from queue, branching to 4 platforms -->
+  <path d="M 1080,500 L 1080,560" stroke="#C4B7A1" stroke-width="1" fill="none" opacity="0.6"/>
+  <path d="M 250,560 L 1910,560" stroke="none"/>
+  <!-- horizontal branch line at y=560 -->
+  <path d="M 200,560 L 1200,560" stroke="#C4B7A1" stroke-width="1" fill="none" opacity="0.5"/>
+  <path d="M 1080,500 L 1080,560" stroke="#C4B7A1" stroke-width="1" fill="none" opacity="0.5"/>
+  <!-- vertical drops to each platform -->
+  <path d="M 230,560 L 230,620" stroke="#C4B7A1" stroke-width="1" fill="none" opacity="0.5" marker-end="url(#arrow)"/>
+  <path d="M 510,560 L 510,620" stroke="#C4B7A1" stroke-width="1" fill="none" opacity="0.5" marker-end="url(#arrow)"/>
+  <path d="M 790,560 L 790,620" stroke="#C4B7A1" stroke-width="1" fill="none" opacity="0.5" marker-end="url(#arrow)"/>
+  <path d="M 1070,560 L 1070,620" stroke="#C4B7A1" stroke-width="1" fill="none" opacity="0.5" marker-end="url(#arrow)"/>
+
+  <!-- ───────────── ROW 3: 4 platforms ───────────── -->
+  <g transform="translate(110, 620)">
+    <rect width="240" height="120" rx="18" fill="#181614" stroke="#C4B7A1" stroke-width="0.8" opacity="1"/>
+    <text x="120" y="40" text-anchor="middle" font-family="Times New Roman, serif" font-size="10" letter-spacing="4" fill="#7B7466">
+      PLATFORM I
+    </text>
+    <text x="120" y="76" text-anchor="middle" font-family="Times New Roman, serif" font-style="italic" font-size="32" fill="#EDE7DA">
+      Glints
+    </text>
+    <text x="120" y="103" text-anchor="middle" font-family="Times New Roman, serif" font-size="11" letter-spacing="2" fill="#7B7466">
+      cap 20 · React Native
+    </text>
+  </g>
+  <g transform="translate(390, 620)">
+    <rect width="240" height="120" rx="18" fill="#181614" stroke="#C4B7A1" stroke-width="0.8"/>
+    <text x="120" y="40" text-anchor="middle" font-family="Times New Roman, serif" font-size="10" letter-spacing="4" fill="#7B7466">
+      PLATFORM II
+    </text>
+    <text x="120" y="76" text-anchor="middle" font-family="Times New Roman, serif" font-style="italic" font-size="32" fill="#EDE7DA">
+      JobStreet
+    </text>
+    <text x="120" y="103" text-anchor="middle" font-family="Times New Roman, serif" font-size="11" letter-spacing="2" fill="#7B7466">
+      cap 20 · Compose
+    </text>
+  </g>
+  <g transform="translate(670, 620)">
+    <rect width="240" height="120" rx="18" fill="#181614" stroke="#C4B7A1" stroke-width="0.8"/>
+    <text x="120" y="40" text-anchor="middle" font-family="Times New Roman, serif" font-size="10" letter-spacing="4" fill="#7B7466">
+      PLATFORM III
+    </text>
+    <text x="120" y="76" text-anchor="middle" font-family="Times New Roman, serif" font-style="italic" font-size="32" fill="#EDE7DA">
+      LinkedIn
+    </text>
+    <text x="120" y="103" text-anchor="middle" font-family="Times New Roman, serif" font-size="11" letter-spacing="2" fill="#7B7466">
+      cap 20 · Easy Apply
+    </text>
+  </g>
+  <g transform="translate(950, 620)">
+    <rect width="240" height="120" rx="18" fill="#181614" stroke="#C4B7A1" stroke-width="0.8"/>
+    <text x="120" y="40" text-anchor="middle" font-family="Times New Roman, serif" font-size="10" letter-spacing="4" fill="#7B7466">
+      PLATFORM IV
+    </text>
+    <text x="120" y="76" text-anchor="middle" font-family="Times New Roman, serif" font-style="italic" font-size="32" fill="#EDE7DA">
+      Indeed
+    </text>
+    <text x="120" y="103" text-anchor="middle" font-family="Times New Roman, serif" font-size="11" letter-spacing="2" fill="#7B7466">
+      cap 20 · WebView
+    </text>
+  </g>
+
+  <!-- 4 down arrows toward central batch result -->
+  <path d="M 230,740 L 230,800 L 700,800 L 700,830" stroke="#C4B7A1" stroke-width="1" fill="none" opacity="0.5"/>
+  <path d="M 510,740 L 510,800 L 700,800" stroke="#C4B7A1" stroke-width="1" fill="none" opacity="0.5"/>
+  <path d="M 790,740 L 790,800 L 700,800" stroke="#C4B7A1" stroke-width="1" fill="none" opacity="0.5"/>
+  <path d="M 1070,740 L 1070,800 L 700,800" stroke="#C4B7A1" stroke-width="1" fill="none" opacity="0.5"/>
+  <path d="M 700,800 L 700,830" stroke="#C4B7A1" stroke-width="1" fill="none" opacity="0.5" marker-end="url(#arrow)"/>
+
+  <!-- ───────────── ROW 4: batch result diamond ───────────── -->
+  <g transform="translate(550, 850)">
+    <polygon points="150,0 300,60 150,120 0,60" fill="#181614" stroke="#C4B7A1" stroke-width="1"/>
+    <text x="150" y="50" text-anchor="middle" font-family="Times New Roman, serif" font-size="10" letter-spacing="4" fill="#7B7466">
+      BATCH RESULT
+    </text>
+    <text x="150" y="80" text-anchor="middle" font-family="Times New Roman, serif" font-style="italic" font-size="22" fill="#EDE7DA">
+      count == 0 ?
+    </text>
+  </g>
+
+  <!-- branches from diamond: left = retry, right = TAMAT -->
+  <!-- LEFT: retry loop back to platforms -->
+  <path d="M 550,910 L 80,910 L 80,680 L 110,680" stroke="#C4B7A1" stroke-width="1" fill="none" opacity="0.5" marker-end="url(#arrow)"/>
+  <text x="320" y="900" text-anchor="middle" font-family="Times New Roman, serif" font-style="italic" font-size="14" fill="#C4B7A1">
+    streak &lt; 2, next batch ↺
+  </text>
+
+  <!-- RIGHT: continue to retrospective -->
+  <path d="M 850,910 L 1320,910 L 1320,1000 L 1080,1000" stroke="#E2401C" stroke-width="1.2" fill="none" opacity="0.85" marker-end="url(#arrowRed)"/>
+  <text x="1080" y="900" text-anchor="middle" font-family="Times New Roman, serif" font-style="italic" font-size="14" fill="#E2401C">
+    streak ≥ 2 OR cap reached
+  </text>
+
+  <!-- ───────────── ROW 5: AI Retrospective ───────────── -->
+  <g transform="translate(800, 970)">
+    <rect width="280" height="100" rx="18" fill="#181614" stroke="#E2401C" stroke-width="1.5"/>
+    <text x="140" y="38" text-anchor="middle" font-family="Times New Roman, serif" font-size="10" letter-spacing="4" fill="#E2401C">
+      OPENROUTER
+    </text>
+    <text x="140" y="68" text-anchor="middle" font-family="Times New Roman, serif" font-style="italic" font-size="22" fill="#EDE7DA">
+      AI Retrospective
+    </text>
+    <text x="140" y="88" text-anchor="middle" font-family="Times New Roman, serif" font-size="11" letter-spacing="2" fill="#C4B7A1">
+      ~2200 chars markdown
+    </text>
+  </g>
+
+  <!-- arrow down to file write -->
+  <path d="M 940,1070 L 940,1130" stroke="#C4B7A1" stroke-width="1" fill="none" opacity="0.6" marker-end="url(#arrow)"/>
+
+  <!-- ───────────── ROW 6: file write ───────────── -->
+  <g transform="translate(630, 1130)">
+    <rect width="280" height="100" rx="18" fill="#181614" stroke="#7B7466" stroke-width="1"/>
+    <text x="140" y="38" text-anchor="middle" font-family="Times New Roman, serif" font-size="10" letter-spacing="4" fill="#7B7466">
+      OUTPUT
+    </text>
+    <text x="140" y="68" text-anchor="middle" font-family="Times New Roman, serif" font-style="italic" font-size="22" fill="#EDE7DA">
+      Lamaran/DDMMYYYY.md
+    </text>
+    <text x="140" y="88" text-anchor="middle" font-family="Times New Roman, serif" font-size="11" letter-spacing="2" fill="#C4B7A1">
+      append [SELESAI] essay
+    </text>
+  </g>
+
+  <!-- arrow back to queue (next platform) -->
+  <path d="M 630,1180 L 80,1180 L 80,450 L 940,450" stroke="#C4B7A1" stroke-width="1" stroke-dasharray="5 4" fill="none" opacity="0.45" marker-end="url(#arrow)"/>
+  <text x="60" y="800" text-anchor="middle" font-family="Times New Roman, serif" font-style="italic" font-size="13" fill="#7B7466" transform="rotate(-90 60 800)">
+    next platform in queue
+  </text>
+
+  <!-- Each apply within a platform branch also writes to file (side annotation) -->
+  <g transform="translate(330, 760)">
+    <line x1="0" y1="0" x2="280" y2="0" stroke="#7B7466" stroke-width="0.5" stroke-dasharray="2 2" opacity="0.5"/>
+    <text x="140" y="20" text-anchor="middle" font-family="Times New Roman, serif" font-style="italic" font-size="12" fill="#7B7466">
+      Tiap apply sukses → report.write_application(...) + AI summary
+    </text>
+    <text x="140" y="38" text-anchor="middle" font-family="Times New Roman, serif" font-style="italic" font-size="12" fill="#7B7466">
+      state_manager.mark_applied(jid) → state.json
+    </text>
+  </g>
+
+  <!-- bottom footer -->
+  <line x1="80" y1="1290" x2="1320" y2="1290" stroke="#7B7466" stroke-width="0.5" opacity="0.4"/>
+  <text x="80" y="1318" font-family="Times New Roman, serif" font-size="11" letter-spacing="3" fill="#7B7466">
+    PERSONA · OPERATOR FLOW
+  </text>
+  <text x="700" y="1318" text-anchor="middle" font-family="Times New Roman, serif" font-style="italic" font-size="13" fill="#C4B7A1">
+    sequential, idempotent, observable
+  </text>
+  <text x="1320" y="1318" text-anchor="end" font-family="Times New Roman, serif" font-size="11" letter-spacing="3" fill="#7B7466">
+    Y. A. MANOPPO · 2026
+  </text>
+
+  <!-- crop marks -->
+  <g stroke="#7B7466" stroke-width="1" opacity="0.4">
+    <line x1="60" y1="20" x2="80" y2="20"/>
+    <line x1="20" y1="60" x2="20" y2="80"/>
+    <line x1="1340" y1="20" x2="1320" y2="20"/>
+    <line x1="1380" y1="60" x2="1380" y2="80"/>
+    <line x1="60" y1="1360" x2="80" y2="1360"/>
+    <line x1="20" y1="1300" x2="20" y2="1320"/>
+    <line x1="1340" y1="1360" x2="1320" y2="1360"/>
+    <line x1="1380" y1="1300" x2="1380" y2="1320"/>
+  </g>
+</svg>
