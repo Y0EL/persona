@@ -1,0 +1,157 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" width="1200" height="720">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#070707"/>
+      <stop offset="100%" stop-color="#000000"/>
+    </linearGradient>
+    <radialGradient id="halo" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.07"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#ffffff"/>
+    </marker>
+    <marker id="arrowDim" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#666666"/>
+    </marker>
+  </defs>
+
+  <rect width="1200" height="720" fill="url(#bg)"/>
+  <ellipse cx="600" cy="280" rx="600" ry="240" fill="url(#halo)"/>
+
+  <g stroke="#ffffff" stroke-width="0.5" fill="none" opacity="0.18">
+    <path d="M 40 80  L 220 130 L 380 80  L 540 160 L 700 110 L 860 150 L 1020 100 L 1170 130"/>
+    <path d="M 60 640 L 230 600 L 400 660 L 560 610 L 720 670 L 880 620 L 1040 660 L 1160 620"/>
+    <path d="M 40 80 L 60 640"/>
+    <path d="M 380 80 L 400 660"/>
+    <path d="M 700 110 L 720 670"/>
+    <path d="M 1020 100 L 1040 660"/>
+  </g>
+  <g fill="#ffffff" opacity="0.45">
+    <circle cx="40"   cy="80"  r="2"/>
+    <circle cx="220"  cy="130" r="2"/>
+    <circle cx="380"  cy="80"  r="2"/>
+    <circle cx="540"  cy="160" r="2"/>
+    <circle cx="700"  cy="110" r="2"/>
+    <circle cx="860"  cy="150" r="2"/>
+    <circle cx="1020" cy="100" r="2"/>
+    <circle cx="1170" cy="130" r="2"/>
+    <circle cx="60"   cy="640" r="2"/>
+    <circle cx="230"  cy="600" r="2"/>
+    <circle cx="400"  cy="660" r="2"/>
+    <circle cx="560"  cy="610" r="2"/>
+    <circle cx="720"  cy="670" r="2"/>
+    <circle cx="880"  cy="620" r="2"/>
+    <circle cx="1040" cy="660" r="2"/>
+    <circle cx="1160" cy="620" r="2"/>
+  </g>
+
+  <text x="600" y="50" text-anchor="middle" fill="#ffffff" font-family="'Segoe UI', Arial" font-size="20" font-weight="300" letter-spacing="8" opacity="0.85">A R C H I T E C T U R E</text>
+  <line x1="430" y1="68" x2="770" y2="68" stroke="#ffffff" stroke-width="0.5" opacity="0.35"/>
+
+  <g font-family="'Segoe UI', Arial, sans-serif">
+    <rect x="475" y="100" width="250" height="90" rx="2" fill="#0a0a0a" stroke="#ffffff" stroke-width="1.6"/>
+    <text x="600" y="138" text-anchor="middle" fill="#ffffff" font-size="22" font-weight="500" letter-spacing="2">main.py</text>
+    <text x="600" y="166" text-anchor="middle" fill="#9a9a9a" font-family="Consolas, monospace" font-size="12">orchestrator loop 5G to 5JS</text>
+  </g>
+
+  <g font-family="'Segoe UI', Arial, sans-serif">
+    <rect x="100" y="250" width="290" height="130" rx="2" fill="#0a0a0a" stroke="#ffffff" stroke-width="1.4"/>
+    <text x="245" y="290" text-anchor="middle" fill="#ffffff" font-size="20" font-weight="500" letter-spacing="2">glints.py</text>
+    <text x="245" y="316" text-anchor="middle" fill="#bdbdbd" font-family="Consolas, monospace" font-size="11">content desc selectors</text>
+    <text x="245" y="336" text-anchor="middle" fill="#bdbdbd" font-family="Consolas, monospace" font-size="11">skill | language | experience</text>
+    <text x="245" y="356" text-anchor="middle" fill="#bdbdbd" font-family="Consolas, monospace" font-size="11">industry matrix | yes no | free text</text>
+  </g>
+
+  <g font-family="'Segoe UI', Arial, sans-serif">
+    <rect x="810" y="250" width="290" height="130" rx="2" fill="#0a0a0a" stroke="#ffffff" stroke-width="1.4"/>
+    <text x="955" y="290" text-anchor="middle" fill="#ffffff" font-size="20" font-weight="500" letter-spacing="2">jobstreet.py</text>
+    <text x="955" y="316" text-anchor="middle" fill="#bdbdbd" font-family="Consolas, monospace" font-size="11">text selectors Compose UI</text>
+    <text x="955" y="336" text-anchor="middle" fill="#bdbdbd" font-family="Consolas, monospace" font-size="11">salary input | dropdown picker</text>
+    <text x="955" y="356" text-anchor="middle" fill="#bdbdbd" font-family="Consolas, monospace" font-size="11">foreign rights guard</text>
+  </g>
+
+  <g font-family="'Segoe UI', Arial, sans-serif">
+    <rect x="60" y="440" width="220" height="88" rx="2" fill="#0a0a0a" stroke="#ffffff" stroke-width="1.2"/>
+    <text x="170" y="478" text-anchor="middle" fill="#ffffff" font-size="18" font-weight="500" letter-spacing="2">state.json</text>
+    <text x="170" y="504" text-anchor="middle" fill="#9a9a9a" font-family="Consolas, monospace" font-size="11">applied jobs persistent</text>
+  </g>
+
+  <g font-family="'Segoe UI', Arial, sans-serif">
+    <rect x="320" y="440" width="220" height="88" rx="2" fill="#0a0a0a" stroke="#ffffff" stroke-width="1.2"/>
+    <text x="430" y="478" text-anchor="middle" fill="#ffffff" font-size="18" font-weight="500" letter-spacing="2">report.py</text>
+    <text x="430" y="504" text-anchor="middle" fill="#9a9a9a" font-family="Consolas, monospace" font-size="11">markdown writer pretty</text>
+  </g>
+
+  <g font-family="'Segoe UI', Arial, sans-serif">
+    <rect x="660" y="440" width="240" height="88" rx="2" fill="#0a0a0a" stroke="#ffffff" stroke-width="1.2"/>
+    <text x="780" y="478" text-anchor="middle" fill="#ffffff" font-size="18" font-weight="500" letter-spacing="2">ai_helper.py</text>
+    <text x="780" y="504" text-anchor="middle" fill="#9a9a9a" font-family="Consolas, monospace" font-size="11">profile context + 8 LLMs</text>
+  </g>
+
+  <g font-family="'Segoe UI', Arial, sans-serif">
+    <rect x="940" y="440" width="200" height="88" rx="2" fill="#000000" stroke="#ffffff" stroke-width="1.2" stroke-dasharray="4 3"/>
+    <text x="1040" y="472" text-anchor="middle" fill="#ffffff" font-size="16" font-weight="500" letter-spacing="2">OpenRouter</text>
+    <text x="1040" y="494" text-anchor="middle" fill="#9a9a9a" font-family="Consolas, monospace" font-size="10">8 free LLM endpoints</text>
+    <text x="1040" y="510" text-anchor="middle" fill="#9a9a9a" font-family="Consolas, monospace" font-size="10">gpt oss | llama | qwen</text>
+  </g>
+
+  <g font-family="'Segoe UI', Arial, sans-serif">
+    <rect x="320" y="598" width="220" height="88" rx="2" fill="#0a0a0a" stroke="#ffffff" stroke-width="1.4"/>
+    <text x="430" y="634" text-anchor="middle" fill="#ffffff" font-size="18" font-weight="500" letter-spacing="2">DDMMYYYY.md</text>
+    <text x="430" y="660" text-anchor="middle" fill="#9a9a9a" font-family="Consolas, monospace" font-size="11">daily report artifact</text>
+  </g>
+
+  <g font-family="'Segoe UI', Arial, sans-serif">
+    <rect x="660" y="598" width="240" height="88" rx="2" fill="#0a0a0a" stroke="#ffffff" stroke-width="1.4"/>
+    <text x="780" y="634" text-anchor="middle" fill="#ffffff" font-size="18" font-weight="500" letter-spacing="2">visualizer.py</text>
+    <text x="780" y="660" text-anchor="middle" fill="#9a9a9a" font-family="Consolas, monospace" font-size="11">loguru terminal replay</text>
+  </g>
+
+  <g fill="none" stroke="#ffffff" stroke-width="1.6">
+    <path d="M 530 190 Q 380 220 290 250" marker-end="url(#arrow)"/>
+    <path d="M 670 190 Q 820 220 910 250" marker-end="url(#arrow)"/>
+  </g>
+  <text x="370" y="222" fill="#ffffff" font-family="Consolas, monospace" font-size="11" opacity="0.85">batch G</text>
+  <text x="800" y="222" fill="#ffffff" font-family="Consolas, monospace" font-size="11" opacity="0.85">batch JS</text>
+
+  <g fill="none" stroke="#666666" stroke-width="1">
+    <path d="M 200 380 Q 170 410 170 440" marker-end="url(#arrowDim)"/>
+    <path d="M 260 380 Q 360 410 410 440" marker-end="url(#arrowDim)"/>
+    <path d="M 300 380 Q 560 410 720 440" marker-end="url(#arrowDim)"/>
+    <path d="M 900 380 Q 740 410 510 440" marker-end="url(#arrowDim)"/>
+    <path d="M 950 380 Q 350 410 230 440" marker-end="url(#arrowDim)"/>
+    <path d="M 870 380 Q 820 410 790 440" marker-end="url(#arrowDim)"/>
+  </g>
+
+  <g fill="none" stroke="#ffffff" stroke-width="1.6" stroke-dasharray="6 3">
+    <path d="M 900 484 L 940 484" marker-end="url(#arrow)"/>
+  </g>
+  <text x="906" y="476" fill="#ffffff" font-family="Consolas, monospace" font-size="10" opacity="0.85">HTTP</text>
+
+  <g fill="none" stroke="#ffffff" stroke-width="1.6">
+    <path d="M 430 528 L 430 598" marker-end="url(#arrow)"/>
+  </g>
+  <text x="442" y="568" fill="#ffffff" font-family="Consolas, monospace" font-size="11" opacity="0.85">write</text>
+
+  <g fill="none" stroke="#ffffff" stroke-width="1.6">
+    <path d="M 540 642 L 660 642" marker-end="url(#arrow)"/>
+  </g>
+  <text x="556" y="634" fill="#ffffff" font-family="Consolas, monospace" font-size="11" opacity="0.85">read</text>
+
+  <g font-family="Consolas, monospace" font-size="11" fill="#9a9a9a">
+    <text x="40" y="704">orchestration</text>
+    <text x="180" y="704">.   Glints handler</text>
+    <text x="340" y="704">.   JobStreet handler</text>
+    <text x="510" y="704">.   storage</text>
+    <text x="610" y="704">.   AI plus replay</text>
+    <text x="740" y="704">.   artifact</text>
+  </g>
+
+  <g fill="none" stroke="#ffffff" stroke-width="0.6" opacity="0.5">
+    <path d="M 0 0 L 22 0 L 22 14"/>
+    <path d="M 1200 0 L 1178 0 L 1178 14"/>
+    <path d="M 0 720 L 22 720 L 22 706"/>
+    <path d="M 1200 720 L 1178 720 L 1178 706"/>
+  </g>
+</svg>

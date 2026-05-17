@@ -221,7 +221,7 @@ def _select_cover_letter(d):
             nodes[0].click()
             time.sleep(T_TAP)
             return True
-        d.swipe_ext("up", scale=0.45)
+        d.swipe(540, 2000, 540, 700, duration=0.04)
         time.sleep(T_TAP)
     return False
 
@@ -229,7 +229,7 @@ def _select_cover_letter(d):
 def _step1_documents(d):
     """Step 1: pilih resume + cover letter (cepat)."""
     for attempt in range(2):
-        d.swipe_ext("down", scale=0.8)
+        d.swipe(540, 400, 540, 2200, duration=0.04)
         time.sleep(0.1)
 
         _select_resume(d)
@@ -250,7 +250,7 @@ def _step4_submit(d):
     for _ in range(6):
         if d(text="Submit application").exists(timeout=0.3):
             break
-        d.swipe_ext("up", scale=0.7)
+        d.swipe(540, 2200, 540, 200, duration=0.04)
         time.sleep(0.12)
 
     # Tap Submit — pakai text-based dulu, fallback ke koordinat
@@ -383,11 +383,71 @@ def _pick_dropdown_option(question_text, options):
     return options[-1] if options else None
 
 
+def _fill_salary_input(d):
+    """Cari salary input yang masih kosong (placeholder 'Rp' tanpa angka), isi 10000000."""
+    try:
+        # Cari semua TextView dengan text yang exact "Rp" atau pattern Rp tanpa angka
+        nodes = d.xpath('//*[@text!=""]').all()
+        for n in nodes:
+            txt = n.attrib.get("text", "").strip()
+            # Indikator salary kosong: hanya "Rp" atau "Rp." atau "Rp " saja
+            if txt in ("Rp", "Rp.", "Rp ", "Rp 0"):
+                b = n.attrib.get("bounds", "")
+                m = re.match(r"\[(\d+),(\d+)\]\[(\d+),(\d+)\]", b)
+                if not m:
+                    continue
+                cx = (int(m.group(1)) + int(m.group(3))) // 2
+                cy = (int(m.group(2)) + int(m.group(4))) // 2
+                d.click(cx, cy)
+                time.sleep(0.3)
+                # Type via uiautomator2 set_text (atau ADB fallback)
+                typed = False
+                try:
+                    d.send_keys("10000000")
+                    typed = True
+                except Exception:
+                    pass
+                if not typed:
+                    adb_utils.adb(DEVICE_SERIAL, "shell", "input", "text", "10000000")
+                time.sleep(0.3)
+                try:
+                    d.press("back")  # tutup keyboard
+                except Exception:
+                    pass
+                time.sleep(0.15)
+                print(f"[jobstreet]   salary kosong -> 10000000")
+                return True
+    except Exception as e:
+        print(f"[jobstreet] _fill_salary_input error: {e}")
+    return False
+
+
+def _dismiss_validation_dialog(d):
+    """Tutup dialog 'Answers required for all questions' kalau muncul."""
+    try:
+        if d(textContains="Answers required").exists(timeout=0.3) or \
+           d(textContains="required for all").exists(timeout=0.3):
+            if d(text="OK").exists(timeout=0.3):
+                d(text="OK").click()
+                time.sleep(0.2)
+                return True
+    except Exception:
+        pass
+    return False
+
+
 def _answer_step2_questions(d):
     """
-    Step 2 JobStreet: handle 'Select answer' dropdowns + Yes/No + EditText.
+    Step 2 JobStreet: handle 'Select answer' dropdowns + Yes/No + EditText + Salary.
+    Dilakukan satu per satu agar setiap question pasti terisi.
     """
-    # Yes/Ya questions
+    # 0. Tutup dialog validation kalau ada
+    _dismiss_validation_dialog(d)
+
+    # 1. Salary input kosong -> isi 10000000
+    _fill_salary_input(d)
+
+    # 2. Yes/Ya questions
     try:
         for label in ["Yes", "Ya"]:
             items = d.xpath(f'//*[@text="{label}"]/ancestor::*[@clickable="true"][1]').all()
@@ -508,6 +568,52 @@ def _answer_step2_questions(d):
     return handled_any
 
 
+def _close_to_feed(d):
+    """Tutup halaman Success/detail. Klik X kiri atas, fallback back press."""
+    try:
+        # X biasanya di kiri atas (12,138 atau sekitar)
+        for _ in range(3):
+            # Cek apakah masih di halaman application/success
+            if d(textContains="Success").exists(timeout=0.3) or \
+               d(textContains="Nice work").exists(timeout=0.3) or \
+               d(textContains="Step ").exists(timeout=0.3) or \
+               d(textContains="Application").exists(timeout=0.3):
+                # Tap X close
+                d.click(80, 200)
+                time.sleep(0.3)
+                # Konfirmasi "Discard application?" -> Discard
+                if d(text="Discard").exists(timeout=0.5):
+                    d(text="Discard").click()
+                    time.sleep(0.3)
+                continue
+            # Sudah keluar
+            return True
+        d.press("back")
+        time.sleep(0.15)
+    except Exception:
+        pass
+    return False
+
+
+def _scroll_for_more_cards(d):
+    """Scroll dalam beberapa kali biar dapat lebih banyak card di JS feed."""
+    for _ in range(4):
+        d.swipe(540, 2200, 540, 200, duration=0.04)
+        time.sleep(0.15)
+
+
+def _tap_refresh(d):
+    """Tap tombol Refresh kalau ada untuk pull cards baru."""
+    try:
+        if d(text="Refresh").exists(timeout=0.5):
+            d(text="Refresh").click()
+            time.sleep(1.0)
+            return True
+    except Exception:
+        pass
+    return False
+
+
 def _complete_apply(d):
     """
     Selesaikan 4 step Quick Apply JobStreet.
@@ -531,22 +637,39 @@ def _complete_apply(d):
         _step1_documents(d)
         time.sleep(T_ANIM + 0.5)
 
-    # Step 2 dan 3: coba Continue, jika gagal coba jawab questions dulu
-    for attempt in range(5):
+    # Step 2 dan 3: jawab semua question dulu (scroll bertahap), lalu Continue
+    for attempt in range(8):
         # Sudah di step 4?
-        if d(textContains="Review and submit").exists(timeout=0.6) or \
+        if d(textContains="Review and submit").exists(timeout=0.4) or \
            d(textContains="Submit application").exists(timeout=0.3):
             break
 
-        # Try Continue
-        if d(text="Continue").exists(timeout=1.5):
-            _tap_text(d, "Continue", timeout=0.8)
-            time.sleep(T_ANIM + 0.5)
+        # Tutup dialog 'Answers required' kalau ada
+        if _dismiss_validation_dialog(d):
+            # Setelah dismiss, scroll up cari question kosong dan isi
+            d.swipe(540, 400, 540, 2200, duration=0.04)  # scroll ke atas
+            time.sleep(0.2)
+            _answer_step2_questions(d)
+            # Scroll bertahap ke bawah sambil isi
+            for _ in range(4):
+                d.swipe(540, 2200, 540, 600, duration=0.04)
+                time.sleep(0.15)
+                _answer_step2_questions(d)
+            time.sleep(0.2)
             continue
 
-        # Continue tidak ada / tidak enable -> kemungkinan ada question belum dijawab
+        # Coba isi questions (kalau ada Select answer / salary kosong)
         _answer_step2_questions(d)
-        time.sleep(T_ANIM)
+
+        # Tap Continue
+        if d(text="Continue").exists(timeout=0.8):
+            _tap_text(d, "Continue", timeout=0.5)
+            time.sleep(0.4)
+            continue
+
+        # Tidak ada Continue dan tidak ada dialog, scroll cari
+        d.swipe(540, 2200, 540, 600, duration=0.04)
+        time.sleep(0.15)
 
     # Step 4: Submit
     if d(textContains="Review and submit").exists(timeout=2) or \
@@ -569,8 +692,9 @@ def run_batch(d, limit=BATCH_SIZE):
 
     applied = 0
     skipped = 0
+    empty_streak = 0
 
-    for _ in range(40):
+    for iter_n in range(60):
         if applied >= limit:
             break
 
@@ -578,9 +702,17 @@ def run_batch(d, limit=BATCH_SIZE):
         new   = [c for c in cards if c["bounds_key"] not in _seen_jobstreet]
 
         if not new:
-            d.swipe_ext("up", scale=0.85)
-            time.sleep(T_TAP)
+            empty_streak += 1
+            # Setiap 5x empty scroll, tap Refresh untuk pull cards baru
+            if empty_streak % 5 == 0:
+                _tap_refresh(d)
+            d.swipe(540, 2200, 540, 200, duration=0.04)
+            time.sleep(0.1)
+            if empty_streak >= 15:
+                # Sudah scroll banyak, masih tidak ada -> stop
+                break
             continue
+        empty_streak = 0
 
         for card in new:
             if applied >= limit:
@@ -651,9 +783,8 @@ def run_batch(d, limit=BATCH_SIZE):
                 else:
                     print(f"[jobstreet] form tidak selesai: {position}")
 
-                # Kembali ke home — tap X atau back dari halaman Success
-                d.press("back")
-                time.sleep(T_TAP)
+                # Tutup halaman Success / form: tap X (kiri atas) lalu back ke feed
+                _close_to_feed(d)
 
             except Exception as e:
                 print(f"[jobstreet] error: {e}")
@@ -666,7 +797,7 @@ def run_batch(d, limit=BATCH_SIZE):
                     pass
                 time.sleep(T_TAP)
 
-        d.swipe_ext("up", scale=0.85)
+        d.swipe(540, 2200, 540, 200, duration=0.04)
         time.sleep(T_TAP)
 
     print(f"[jobstreet] Batch selesai: {applied} dilamar, {skipped} diskip")
