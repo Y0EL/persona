@@ -1,75 +1,96 @@
 <div align="center">
 
-<img src="automation/assets/banner.svg" alt="Auto Apply Android Job Bot" width="100%"/>
+<img src="automation/assets/dispatch_title.svg" alt="Persona the application is the work." width="100%"/>
 
-### Bot lamaran kerja otomatis untuk Glints sama JobStreet di Android
-### Zero human in the loop, jalan via ADB di HP beneran
+<br/>
+
+<sub>
+<b>An autonomous applicant for Yoel Andreas Manoppo</b><br/>
+Agent lamaran kerja Android. ADB-driven. Multi-platform. Editorial dashboard.<br/>
+<i>Mengirim brief kerja secara terus-menerus, satu lowongan pada satu waktu.</i>
+</sub>
+
+<br/><br/>
+
+<img src="https://img.shields.io/badge/python-3.11-3776AB?style=flat-square&logo=python&logoColor=white"/>
+<img src="https://img.shields.io/badge/android-ADB-3DDC84?style=flat-square&logo=android&logoColor=white"/>
+<img src="https://img.shields.io/badge/uiautomator2-v3.5-FF6B3D?style=flat-square"/>
+<img src="https://img.shields.io/badge/FastAPI-0.115-009688?style=flat-square&logo=fastapi&logoColor=white"/>
+<img src="https://img.shields.io/badge/OpenRouter-free%20tier-7C3AED?style=flat-square"/>
+<img src="https://img.shields.io/badge/platforms-4-E2401C?style=flat-square"/>
 
 </div>
 
 <br/>
 
-## Apaan Sih Ini
-
-Bot ini handle proses lamar kerja dari A sampai Z di Glints dan JobStreet, full otomatis, pakai HP fisik yang konek ke laptop via ADB. Dia bisa:
-
-- Buka aplikasi, scroll feed, search by keyword
-- Klik card lowongan, baca detail, tap tombol apply
-- Isi form HRD step demi step (CV, pertanyaan skill, bahasa, pengalaman, gaji)
-- Jawab pertanyaan teks bebas pake LLM gratis (OpenRouter)
-- Submit lamaran, balik ke feed, lanjut lamaran berikutnya
-- Catat semua di file Markdown harian yang rapi
-
-Ada juga visualizer keren yang replay laporan harian seolah olah lagi nge scan live di terminal pakai loguru.
+> Tidak ada human di dalam loop, sampai loop itu sendiri yang minta perhatian.
+> Agent ini scan feed Glints, JobStreet, LinkedIn, dan Indeed, lalu mengisi setiap form
+> aplikasi dengan jawaban yang di-generate AI dari profile asli Yoel. Tiap lamaran
+> ditulis ke laporan markdown harian. Setiap platform yang tamat dapat retrospective AI
+> dengan saran improvement untuk Yoel.
 
 <br/>
 
-## Fitur Andalan
+<div align="center">
+<img src="automation/dashboard_static/d1.png" alt="Today the cover" width="100%"/>
+<br/><sub><i>Today · cover spread dengan portrait Yoel, headline editorial, dan tiga metrik primer.</i></sub>
+</div>
+
+<br/>
+
+## Apa Ini, Sebenarnya
+
+Sebuah sistem dengan **empat lapisan**, tinggal di laptop tapi mengoperasikan HP fisik Yoel:
+
+| Lapisan | Bahan | Tugas |
+|---|---|---|
+| **Operator** | `automation/main.py` | Orkestrator. Run platform sequential sampai cap 20 atau zero-streak |
+| **Handler** | `glints.py` · `jobstreet.py` · `linkedin.py` · `indeed.py` | Scrape feed, klik kartu, isi form 4-step, submit |
+| **Otak** | `ai_helper.py` (OpenRouter free tier) | Jawab pertanyaan form, tulis summary perusahaan, generate retrospective |
+| **Mata** | `dashboard_server.py` + `dashboard_static/index.html` | Live dashboard editorial di port 8000 |
+
+Setiap apply yang berhasil → catat ke `Lamaran/DDMMYYYY.md` dengan AI summary lengkap (kultur perusahaan, role, skill requirement, benefit, fit-score untuk Yoel). Tiap platform yang tamat → satu essay retrospective di file yang sama.
+
+<br/>
+
+## Empat Halaman, Bukan Satu Dashboard
+
+Ini bukan admin panel SaaS biasa. Lebih dekat ke **majalah cetak yang terbuka di atas meja operator**, mengupdate diri sendiri setiap tiga detik.
 
 <table>
 <tr>
-<td valign="top" width="33%">
+<td width="50%" valign="top">
 
-**Dua platform sekaligus**
+### § 01 · Today
+<img src="automation/dashboard_static/d1.png" alt="Today" width="100%"/>
 
-Glints (React Native, selector pake content desc) sama JobStreet (Compose, selector pake text). Masing masing punya handler sendiri sesuai kuirk UI nya.
-
-</td>
-<td valign="top" width="33%">
-
-**Filter ketat**
-
-Minimal gaji 8 juta. Blacklist 4 perusahaan. Fuzzy match 60 lebih keyword posisi. Cek lokasi Jabodetabek. Detector lowongan luar negeri yang butuh work rights khusus.
+<sub>**Editorial cover.** Portrait Yoel di kiri (sepia, hover full-color), headline serif besar, tiga metrik utama: Dispatched · Cumulative · On the Floor. Nav pill atas: Today / History / Wire.</sub>
 
 </td>
-<td valign="top" width="33%">
+<td width="50%" valign="top">
 
-**Jawaban dibantu AI**
+### § 02 · History · Archive
+<img src="automation/dashboard_static/d2.png" alt="Archive" width="100%"/>
 
-Pakai OpenRouter free model (gpt oss 120b, llama 3.3 70b, qwen3, gemma, deepseek). Kalau semua model down, fallback ke jawaban statis yang ditulis manual.
+<sub>**Arsip & heatmap.** Empat agregat (today / yesterday / 7-day / cumulative). Heatmap 14 hari × 24 jam dengan intensitas vermillion. Date picker DDMMYYYY, time range slider, filter platform.</sub>
 
 </td>
 </tr>
 <tr>
-<td valign="top" width="33%">
+<td width="50%" valign="top">
 
-**Handler pertanyaan form**
+### § 03 · Ledger
+<img src="automation/dashboard_static/d3.png" alt="Ledger" width="100%"/>
 
-Skill matrix tap Ahli, bahasa tap Mahir Fasih, Ya atau Tidak, pengalaman 1 sampai 3 thn, industri tap Tidak Berpengalaman, salary input, dropdown picker pinter.
-
-</td>
-<td valign="top" width="33%">
-
-**Recovery anti nyangkut**
-
-Deteksi stuck via screen signature. Lowongan luar negeri di abort awal. Dialog "Discard application" auto closed. State di simpan di JSON jadi bisa lanjut habis crash.
+<sub>**Daftar lamaran harian.** Setiap baris expandable. Index editorial № besar italic. Drop-cap AI summary dengan section "Tentang Perusahaan", "Tentang Role", "Skill Utama", "Benefit", dan "Cocok untuk Yoel?".</sub>
 
 </td>
-<td valign="top" width="33%">
+<td width="50%" valign="top">
 
-**Laporan + replay kosmetik**
+### § 04 · Wire + Floating Dock
+<img src="automation/dashboard_static/d4.png" alt="Wire" width="100%"/>
 
-Tiap hari otomatis bikin file Markdown rapi pakai table, blockquote, dan bullet. Visualizer loguru bisa replay seolah olah lagi running live, ada progress bar dan animated dots.
+<sub>**Live log via SSE** dalam tipografi serif editorial. Bottom-right ada **floating CD-style dock**: progress lingkaran dengan orbit dots, angka aktual di tengah, ticker uptime selalu kelihatan saat scroll.</sub>
 
 </td>
 </tr>
@@ -77,19 +98,7 @@ Tiap hari otomatis bikin file Markdown rapi pakai table, blockquote, dan bullet.
 
 <br/>
 
-## Arsitektur
-
-<div align="center">
-
-<img src="automation/assets/architecture.svg" alt="Architecture Flow" width="100%"/>
-
-</div>
-
-Singkatnya, `main.py` orchestrator yang gilirin batch 5 Glints lalu 5 JobStreet. Handler per platform baca card dari feed, lewatin pipeline filter, buka detail, isi form, lalu submit. Setiap sukses bakal di tulis ke `report.py` jadi file `DDMMYYYY.md` di folder `Lamaran`, dan ID nya di catat di `state.json` biar besok besok ga di lamar lagi. Kalau ada pertanyaan teks bebas, dilempar ke `ai_helper.py` yang panggil OpenRouter. Buat replay, tinggal jalanin `visualizer.py`.
-
-<br/>
-
-## Cara Pake
+## Cara Jalanin (30 Detik)
 
 ```powershell
 # 1. Install dependency
@@ -101,227 +110,223 @@ adb devices
 # 3. Install helper APK uiautomator2 (sekali aja)
 python -m uiautomator2 init
 
-# 4. (Opsional) set API key OpenRouter buat AI text answer
-$env:OPENROUTER_API_KEY = "sk-or-v1-..."
+# 4. Isi .env di root project dengan API key OpenRouter
+#    OPENROUTER_API_KEY=sk-or-v1-...
+notepad .env
 
-# 5. Jalanin full automation, sequential per platform sampai cap 20 atau zero-streak
-#    Otomatis spawn live dashboard di http://127.0.0.1:8000
+# 5. Jalanin full automation (Glints -> JS -> LinkedIn -> Indeed sequential,
+#    cap 20 per platform, auto rotate ke berikutnya kalau tamat atau zero-streak)
 python automation/main.py all
 
-# 6. Atau cuma satu platform aja
+# 6. Atau cuma satu platform
 python automation/main.py glints
 python automation/main.py jobstreet
 python automation/main.py linkedin
 python automation/main.py indeed
 
-# 7. Jalankan tanpa dashboard (kalau perlu silent total)
+# 7. Tanpa dashboard (silent total)
 python automation/main.py all --no-dashboard
 
 # 8. Replay laporan hari ini di terminal
 python automation/visualizer.py
-python automation/visualizer.py --fast
+```
+
+Dashboard auto-spawn di `http://127.0.0.1:8000` saat `main.py` start. Tidak ada jendela CMD tambahan (`CREATE_NO_WINDOW` flag di subprocess).
+
+<br/>
+
+## Filter Pipeline
+
+Sebelum satu lamaran pun dikirim, kartu lowongan harus lewat **enam saringan berurutan**:
+
+```
+   ┌────────────────────┐
+   │ KARTU TERDETEKSI   │
+   └──────────┬─────────┘
+              │
+       1. ✗ STATE        sudah pernah di-apply? skip diam-diam
+              │
+       2. ✗ BLACKLIST    perusahaan eks-Yoel? lewat
+              │
+       3. ✗ SALARY       di bawah Rp 8.000.000? lewat
+              │
+       4. ✗ FUZZY        title cocok 60+ keyword profile? lewat
+              │
+       5. ✗ LOCATION     Jabodetabek only (Glints) / no-foreign (JS)? lewat
+              │
+       6. ✗ FOREIGN      butuh work rights asing? abort
+              │
+              ↓
+   ┌────────────────────┐
+   │   READY TO APPLY   │
+   └────────────────────┘
+```
+
+Setiap skip dicatat di counter session saat platform tamat, counter ini dikirim ke AI untuk retrospective ("Mengapa Glints sudah selesai hari ini").
+
+<br/>
+
+## Jawaban AI yang Tidak Boilerplate
+
+`ai_helper.py` punya **tiga fungsi** yang sama-sama panggil OpenRouter free tier (gpt-oss-120b, llama-3.3-70b, qwen3-next-80b, glm-4.5, deepseek, gemma, dll. dengan fallback cascade):
+
+| Fungsi | Dipanggil saat | Output |
+|---|---|---|
+| `answer_question(q)` | EditText kosong di form HRD | 1 paragraf, contextual ke profile + bahasa form |
+| `summarize_job(raw, company, position)` | Lamaran sukses submit | Markdown 5-section: Tentang Perusahaan / Role / Skill / Benefit / Fit untuk Yoel |
+| `platform_retrospective(name, total, counters, samples)` | Platform tamat (cap atau zero-streak) | Essay 4-section: Mengapa selesai / Pola skip / Rekomendasi improvement / Strategi besok |
+
+**Aturan keras**: `_static_answer()` fallback hanya jalan kalau seluruh kaskade model gagal. Dengan dotenv yang ter-load benar, AI 100% dipakai.
+
+Untuk pertanyaan Yes/No (mis. *"Apakah Anda bersedia bekerja full on-site di Kebon Jeruk?"*), AI tidak akan menulis essay; ia jawab **"Ya, saya bersedia bekerja full on-site di Kebon Jeruk, Jakarta Barat."** sesuai bahasa dan konteks pertanyaan.
+
+<br/>
+
+## Form Handler per Platform
+
+Setiap platform punya quirk UI sendiri. Agent punya handler dedicated:
+
+### Glints (React Native, `content-desc` based)
+
+Form pop-up multi-step. Agent tangani:
+- **Konfirmasi dokumen** (CV otomatis dari profile)
+- **Skill matrix** tap "Ahli" per row untuk semua skill (deteksi via `Mahir-Fasih`, `Ahli`)
+- **Language matrix** tap "Mahir-Fasih" untuk Indonesia, Inggris (C2), Mandarin
+- **Range pengalaman** tap "1-3 thn" sebagai default 3-year experience
+- **Industry matrix** tap "Tidak Berpengalaman" per industri yang Yoel ga sentuh
+- **Yes/No question** default Ya, di-confirm via AI kalau ambigu
+- **Free text EditText** di-fill via `ai_helper.answer_question()` dengan adb input text
+- **Dialog "Ada syarat tidak sesuai"** auto LANJUTKAN kalau Jabodetabek, BATALKAN kalau di luar
+
+### JobStreet (Compose, modal-based search)
+
+Search bar JobStreet **bukan** inline input. Flow yang benar:
+
+```
+Tap "Continue your job search" (top)
+    → MODAL terbuka (Describe field, Enter suburb, filters, SEEK button)
+Tap "Describe what you're looking for"
+    → SUGGESTION PAGE terbuka (full-screen keyword input)
+Type "AI Engineer" via adb input text
+Press KEYCODE_ENTER
+    → kembali ke modal, field terisi, tombol jadi "SEEK 230 Jobs"
+Tap SEEK (via xpath textStartsWith="SEEK ")
+    → RESULTS PAGE
+```
+
+Apply flow: tap kartu (via xpath title bounds, bukan card center karena ada bookmark icon di kanan), tap "Quick apply", lalu Step 1-4: Documents → Questions → Profile → Review & Submit.
+
+### LinkedIn (Easy Apply via Workable)
+
+Workable form 4-page biasanya pre-filled dari LinkedIn profile. Agent:
+- Tap "Top job picks for you" feed (sudah personalized)
+- Filter via "Easy Apply" badge dalam card subtree
+- Tap detail → tap "Easy Apply" → loop Next / Review / Submit
+- Skip kalau form > 4 pages (essay-heavy, belum reliable di-auto-fill)
+
+### Indeed (WebView form)
+
+Form Indeed adalah webview hybrid. Agent:
+- Tap "Beranda" tab bottom nav
+- Iterate card dengan badge "Easily apply"
+- Tap "Lamar sekarang" → form load (kadang lambat 8s+)
+- Step 1 (Resume): pre-selected, scroll bawah, tap Continue
+- Step 2+ (Questions): radio Yes/No detect, text input via AI
+- Submit kalau ke "Review and submit" page
+
+<br/>
+
+## Arsitektur File
+
+```
+persona/
+├── .env                          # OPENROUTER_API_KEY=sk-or-v1-...
+├── README.md                     # ← anda di sini
+│
+├── profile/
+│   ├── yoel_profile.json         # konteks AI: pengalaman, skill, ekspektasi
+│   └── Yoel_Andreas_Manoppo_Resume.docx
+│
+├── Lamaran/
+│   └── DDMMYYYY.md               # laporan harian, append per apply
+│
+└── automation/
+    ├── main.py                   # orkestrator sequential mode
+    ├── config.py                 # device serial, blacklist, fuzzy keywords, MIN_SALARY
+    │
+    ├── glints.py                 # handler React Native via content-desc
+    ├── jobstreet.py              # handler Compose via text + modal-based search
+    ├── linkedin.py               # handler Easy Apply via top picks
+    ├── indeed.py                 # handler WebView form
+    │
+    ├── ai_helper.py              # OpenRouter klien, 3 fungsi (answer/summary/retro)
+    ├── report.py                 # writer markdown rapi, AI summary embedded
+    ├── state_manager.py          # JSON state (applied jobs, jobstreet_logged_in)
+    ├── adb_utils.py              # wrapper ADB subprocess
+    ├── visualizer.py             # replay laporan di terminal pake loguru
+    │
+    ├── dashboard_server.py       # FastAPI + SSE, port 8000
+    ├── dashboard_parsers.py      # parse markdown reports + log untuk dashboard
+    ├── dashboard_static/
+    │   ├── index.html            # single-page editorial dashboard
+    │   ├── d1.png …d4.png        # screenshot dashboard untuk README ini
+    │   └── current.png           # device screenshot (deprecated)
+    │
+    ├── requirements.txt
+    └── assets/
+        ├── banner.svg            # banner lama (deprecated)
+        ├── architecture.svg
+        ├── dispatch_title.svg    # title Times New Roman di README ini
+        └── logo.png
 ```
 
 <br/>
 
-## Live Dashboard
+## Diagram Alir Operator
 
-Tiap kali lo run `python automation/main.py`, dashboard FastAPI auto-spawn di background (no CMD window). Buka di browser:
-
-```
-http://127.0.0.1:8000
-```
-
-Yang lo lihat (editorial-style, bukan generic admin):
-
-- **Cover spread**: portrait Yoel + headline + 3 metrik utama (today / cumulative / on-the-floor)
-- **§01 Instruments**: 4 vertical gauge cards per platform dengan FINIS stamp kalau tamat
-- **§02 Now Playing**: company + position yang lagi di-apply, last action, session uptime
-- **§03 The Ledger**: semua lamaran hari ini, click expand untuk render AI summary markdown (kultur perusahaan, role fit)
-- **§04 Essays**: retrospective AI per platform yang udah tamat (kenapa selesai + improvement untuk Yoel)
-- **§05 Wire**: live log stream via SSE, editorial column dengan color-coded entries
-
-Jalanin standalone (tanpa main.py):
-```powershell
-python automation/dashboard_server.py
-# default port 8000; override via $env:DASHBOARD_PORT
-```
-
-Stop dashboard:
-```powershell
-Get-Process python | Where-Object { $_.CommandLine -like '*dashboard_server*' } | Stop-Process -Force
-# atau matiin semua python (otomatis bunuh dashboard juga)
-Get-Process python | Stop-Process -Force
-```
+<div align="center">
+<img src="automation/assets/flow_diagram.svg" alt="Persona operator flow diagram" width="100%"/>
+<br/><sub><i>SVG bertekstur, kotak dengan jarak luas, monochrome dengan aksen vermillion untuk titik kritis (entry, retrospective, terminal arrow).</i></sub>
+</div>
 
 <br/>
 
-## Struktur Folder
+## Disclosure & Etika
 
-```
-automation/
-  main.py              entry point, gilir 5G dan 5JS
-  glints.py            handler Glints, pake content desc
-  jobstreet.py         handler JobStreet, pake text plus dropdown picker
-  ai_helper.py         klien OpenRouter, prompt dari profile Yoel
-  report.py            writer markdown rapi (table, blockquote, bullet)
-  state_manager.py     JSON state (applied jobs, login flag)
-  config.py            device serial, blacklist, fuzzy keywords
-  adb_utils.py         wrapper ADB subprocess
-  visualizer.py        replay laporan pake loguru
-  reformat_report.py   convert laporan format lama jadi MD baru
-  requirements.txt
-  README.md
-  assets/
-    banner.svg         banner di paling atas readme
-    architecture.svg   diagram arsitektur
+> Agent ini berbuat seolah-olah Yoel-lah yang sedang melamar. Setiap submission punya kekuatan hukum dan persepsi yang sama dengan kalau Yoel manual mengirimnya. Karena itu:
 
-profile/
-  yoel_profile.json    konteks CV buat AI answer
-  Yoel_Andreas_Manoppo_Resume.docx
+- Profile yang dipakai **harus akurat** `profile/yoel_profile.json` adalah ground truth, tidak boleh dibuat-buat skill yang Yoel ga punya
+- AI **tidak boleh berbohong** di form ("Apakah punya pengalaman dengan X?" → kalau profile tidak menyebut X, jawab **Tidak**)
+- Volume harian **dijaga di bawah threshold ATS spam-detection**: cap 20 per platform, jeda natural antar apply
+- Salary expectation di profile = Rp 10.000.000 → filter `MIN_SALARY = 8.000.000` (toleransi 20% bawah)
+- Lokasi non-Jabodetabek di-cancel otomatis, kecuali lowongan eksplisit remote-friendly
 
-Lamaran/
-  DDMMYYYY.md          laporan harian per tanggal
-
-steps/
-  glints/flow.md       catatan flow UI hasil HITL exploration
-  jobstreet/flow.md
-```
+Volume tinggi (>100/hari) kadang **counterproductive**. Mass-apply menurunkan signal-to-noise di mata recruiter. Agent ini paling efektif sebagai *first-pass coverage* lamaran kelas senior (>Rp 15jt) sebaiknya tetap dilakukan **manual dengan tailored cover letter + portfolio link**.
 
 <br/>
 
-## Cara Kerja
+## Roadmap Kecil
 
-### Deteksi kartu lowongan
-
-Dua dua aplikasi pake feed yang bisa di scroll. Bot dump UI hierarchy via uiautomator2, terus filter node clickable focusable yang lebar nya lebih dari 800 px dan tinggi lebih dari 300 px. Glints kasih data via `content desc` yang ada newline, JobStreet kasih via `text` di `android.widget.TextView`.
-
-### Pipeline filter
-
-Tiap kartu yang ke detek bakal lewatin urutan filter ini:
-
-1. Cek state, udah pernah di lamar atau belum
-2. Cek blacklist 4 perusahaan
-3. Cek gaji minimum 8 juta
-4. Cek fuzzy match 60 lebih keyword posisi
-5. Cek lokasi (Jabodetabek untuk Glints, anti luar negeri untuk JobStreet)
-
-Kartu yang gagal salah satu cek bakal di tandai "applied" di state biar gak di coba lagi.
-
-### Penyelesaian form
-
-**Glints** pake 4 step popover. Tiap step bisa salah satu dari:
-
-- Konfirmasi dokumen (CV udah otomatis dari profile)
-- Skill proficiency matrix (tap Ahli per row)
-- Language proficiency (tap Mahir Fasih)
-- Range pengalaman (tap 1 sampai 3 thn)
-- Industry matrix (tap Tidak Berpengalaman per row, buat industri yang Yoel ga ada pengalaman)
-- Pertanyaan Ya atau Tidak (default Ya)
-- Free text EditText (di generate sama LLM via `ai_helper`)
-
-**JobStreet** pake 4 step bottom sheet. Step 2 nya khusus, sering ada pertanyaan custom kayak:
-
-- Multi select dropdown (pilih opsi yang paling nyambung)
-- Salary input numerik (auto isi 10 juta)
-- Single select dropdown (year range, English level, education, notice period)
-
-Bot scroll loop sampai semua kebantu, kalau ada dialog "Answers required for all questions" tinggal di OK in lalu balik scroll up cari field kosong. Step 4 scroll cari tombol Submit application dan konfirmasi success.
-
-### Jawaban LLM
-
-Pas ada EditText free text dan teks pertanyaan keliatan beneran (panjang minimal, ada tanda tanya atau kata tanya), bot panggil `ai_helper.answer_question`. Coba tiap model berurutan:
-
-```
-openai/gpt oss 120b free
-meta llama 3.3 70b free
-qwen3 next 80b free
-z ai glm 4.5 air free
-deepseek v4 flash free
-google gemma 4 31b free
-nvidia nemotron nano 9b v2 free
-meta llama 3.2 3b free
-```
-
-Jawaban di sanitize buat ADB input, terus di type chunk per chunk. Counter widget `0 of 500` di pake buat verifikasi field beneran ke isi.
-
-### State persistence dan retry
-
-`state.json` simpan ID lamaran (platform pipe company pipe position) plus flag login Glints. Kalau form gagal di tengah, bot **gak** nandain applied (biar besok bisa di coba lagi), tapi hash card di tambahin ke set `_seen` in process biar gak loop di card yang sama dalam satu run.
+- [x] Sequential mode dengan cap per platform
+- [x] AI summary per apply + AI retrospective per platform
+- [x] Live dashboard editorial dengan 4 views
+- [x] Floating CD-style progress dock
+- [x] Filter pipeline: state, blacklist, salary, fuzzy, location, foreign-rights
+- [x] OpenRouter integration with cascade fallback
+- [ ] **Pre-apply fit-score** (AI judge >70% match sebelum form-fill)
+- [ ] **Salary parser fix** untuk koma decimal Indonesia (`5,8jt` jangan di-parse jadi 58jt)
+- [ ] AI summary parity untuk JS + LinkedIn (sekarang baru Glints + Indeed)
+- [ ] Telegram/Discord notify saat apply sukses
+- [ ] Multi-day comparison di History page
 
 <br/>
 
-## Contoh CLI
+<div align="center">
 
-```powershell
-# Default: gilir Glints terus JobStreet, batch 5
-python automation/main.py
+<sub>
+Crafted in Jakarta, 2026.<br/>
+Set in <b>Instrument Serif</b>, <b>Bricolage Grotesque</b>, dan <b>Times New Roman</b>.<br/>
+Dispatched continuously, edited rarely.
+</sub>
 
-# Glints aja
-python automation/main.py glints
-
-# JobStreet aja (lebih cepet, tanpa overhead Glints)
-python automation/main.py jobstreet
-
-# Replay laporan hari ini, animated
-python automation/visualizer.py
-
-# Replay tanggal spesifik tanpa delay
-python automation/visualizer.py 17052026.md --fast
-
-# Reformat laporan format lama jadi format baru yang rapi
-python automation/reformat_report.py
-```
-
-<br/>
-
-## Preview Visualizer
-
-Visualizer nge stream replay sequential pake progress bar, per app context logger (scanner, parser, filter, apply, report), spinner pas simulate wait, dan summary panel di paling akhir. Total lamaran sengaja di taro di belakang biar feel nya kayak beneran lagi cari satu satu, bukan langsung tau dari awal.
-
-```
-12:08:15.421 INFO     system         Initializing job scan engine
-12:08:15.728 INFO     system         Connecting to ADB device 13344254B7000215
-12:08:16.041 SUCCESS  system         Connected to S686LN OP Android 35
-12:08:16.357 INFO     system         Worker pool ready, starting scan
-
-  [PROGRESS] [#####...............................] 5/97  5.2% scanning feed
-
-12:08:17.812 DEBUG    scanner        Scanning Glints feed cards
-12:08:18.054 INFO     parser         Extracting card metadata
-12:08:18.187 SUCCESS  parser         COMPANY  : PT Imani Prima
-12:08:18.302 SUCCESS  parser         POSITION : IT Support Engineer
-12:08:18.418 SUCCESS  parser         SALARY   : Rp 6.000.000 hingga Rp 10.000.000
-12:08:18.601 SUCCESS  filter         All checks PASSED
-12:08:18.835 SUCCESS  apply.gli      Step 4 of 4 SUBMIT
-12:08:18.940 SUCCESS  report         Application sent at 02:42
-```
-
-<br/>
-
-## Konfigurasi
-
-Edit `automation/config.py` buat tuning kelakuan bot.
-
-| Setting | Default | Artinya |
-| :--- | :--- | :--- |
-| DEVICE_SERIAL | 13344254B7000215 | ADB serial HP target |
-| MIN_SALARY | 8000000 | Reject lowongan di bawah angka ini |
-| BATCH_SIZE | 5 | Jumlah lamaran per batch per platform per round |
-| T_TAP | 0.15 | Jeda setelah tap biasa |
-| T_ANIM | 0.35 | Jeda setelah animasi transisi |
-| T_LAUNCH | 3.0 | Jeda setelah launch app |
-| BLACKLIST_COMPANIES | 4 item | Perusahaan yang wajib di skip |
-| FUZZY_KEYWORDS | 60 plus | Keyword posisi buat fuzzy match |
-
-<br/>
-
-## Catatan
-
-Bot ini gua bikin buat keperluan job hunting pribadi (Yoel Andreas Manoppo). Pake yang bertanggung jawab, jangan spam recruiter. Tetep cek laporan harian dan follow up manual buat offer yang paling cocok.
-
-<br/>
-
-## Lisensi
-
-MIT. Bawa profile sendiri, HP sendiri, kopi sendiri.
+</div>
